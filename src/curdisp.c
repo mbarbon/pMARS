@@ -224,6 +224,7 @@ newpg(void)
 
   escape("Sorry, but I think the program is about to crash!", "newpg()",
          GRAPHERR);
+  return -1; /* not reached */
 }
 
 void
@@ -408,7 +409,7 @@ agets5(char *str, int maxchar, int attr)
           str--;
           maxchar++;
           leaveok(curwin, TRUE);
-          if (ox = getcurx(curwin)) {
+          if ((ox = getcurx(curwin))) {
 #if 0
 #ifdef ATTRIBUTE
             mvwaddch(curwin, getcury(curwin), --ox, ' ' | attr);
