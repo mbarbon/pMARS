@@ -95,8 +95,8 @@ do {\
 #else
 #define PUT_ARENA(addr, chr) \
 do {\
-      register int i;\
-      mvwaddch(corewin, (i = ((addr)/scale))/COLS, i % COLS, (chr));\
+      register int i = ((addr)/scale);\
+      mvwaddch(corewin, i / COLS, i % COLS, (chr));\
    } while(0)
 #endif
 
