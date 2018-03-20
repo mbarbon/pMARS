@@ -235,7 +235,7 @@ cur_display_init(void)
   switch (warriors) {
   case 1:
     statuslines = COLS < 40 ? 2 : 1;
-    sprintf(preStatusLine, "%0.20s [0]: %%-5d Cycle: %%-6d", warrior[0].name);
+    sprintf(preStatusLine, "%.20s [0]: %%-5d Cycle: %%-6d", warrior[0].name);
     break;
   case 2:
     statuslines = COLS < 80 ? 2 : 1;

@@ -779,14 +779,15 @@ cdb(char *message)
       open_graphics();
 #else
 #if defined(LINUXGRAPHX)
-      printf(pressAnyKeyToContinue);
+      puts(pressAnyKeyToContinue);
       fflush(stdout);
       svga_getch();
       svga_open_graphics();
 #else
 #if defined(DOSTXTGRAPHX)
 #if defined(CURSESGRAPHX)
-      printf(pressAnyKeyToContinue);
+      puts(pressAnyKeyToContinue);
+      fflush(stdout);
       getch();
       clear_page5();
 #endif
