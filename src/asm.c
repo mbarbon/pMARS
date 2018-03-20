@@ -303,13 +303,14 @@ addsym(symn, curgroup)
 {
   grp_st *symgrp;
 
-  if ((symgrp = (grp_st *) MALLOC(sizeof(grp_st))) != NULL)
-    if ((symgrp->symn = pstrdup(symn)) != NULL)
+  if ((symgrp = (grp_st *) MALLOC(sizeof(grp_st))) != NULL) {
+    if ((symgrp->symn = pstrdup(symn)) != NULL) {
       symgrp->nextsym = curgroup;
-    else {
+    } else {
       FREE(symgrp);
       MEMORYERROR;
     }
+  }
 
   return symgrp;
 }
@@ -367,19 +368,21 @@ addline(vline, src, lspnt)
   uShrt   lspnt;
 {
   line_st *temp;
-  if ((temp = (line_st *) MALLOC(sizeof(line_st))) != NULL)
+  if ((temp = (line_st *) MALLOC(sizeof(line_st))) != NULL) {
     if ((temp->vline = pstrdup(vline)) != NULL) {
       temp->dbginfo = (dbginfo ? TRUE : FALSE);
       temp->linesrc = src;
       temp->nextline = NULL;
-      if (sline[lspnt])                /* First come first serve */
+      if (sline[lspnt]) {              /* First come first serve */
         lline[lspnt] = lline[lspnt]->nextline = temp;
-      else                        /* lline init depends on sline */
+      } else {                    /* lline init depends on sline */
         sline[lspnt] = lline[lspnt] = temp;
+      }
     } else {
       FREE(temp);
       MEMORYERROR;
     }
+  }
 }
 
 /* ******************************************************************* */
@@ -1487,11 +1490,13 @@ encode(sspnt)
                                                                          * been set */
                 }
 #endif
-                else if (resultB)
-                  if (warrior[curWarrior].offset)
+                else if (resultB) {
+                  if (warrior[curWarrior].offset) {
                     errprn(DOEERR, aline, "");
-                  else
+                  } else {
                     warrior[curWarrior].offset = normalize(resultB);
+                  }
+                }
                 /* else ignore 'end' with parameter == 0L */
               }
             else if ((evalerrA = eval_expr(A_expr, &resultA)) < OK_EXPR) {
@@ -2007,8 +2012,8 @@ parse(expr, cell, loc)
   for (aline = sline[sspnt], line = (uShrt) loc; aline;
        aline = aline->nextline) {
     dfashell(aline->vline, &tmp);
-    if (errnum == 0)
-      if (opcode < OPNUM)
+    if (errnum == 0) {
+      if (opcode < OPNUM) {
         if ((evalerrA = eval_expr(A_expr, &resultA)) < OK_EXPR) {
           if (evalerrA == DIV_ZERO)
             errprn(DIVERR, aline, "");
@@ -2035,6 +2040,8 @@ parse(expr, cell, loc)
             cell -= coreSize;
           }
         }
+      }
+    }
   }
   disposeline(sline[0]);
   disposeline(sline[1]);
