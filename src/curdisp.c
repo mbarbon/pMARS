@@ -407,18 +407,18 @@ agets5(char *str, int maxchar, int attr)
           str--;
           maxchar++;
           leaveok(curwin, TRUE);
-          if (ox = curwin->_curx) {
+          if (ox = getcurx(curwin)) {
 #if 0
 #ifdef ATTRIBUTE
-            mvwaddch(curwin, curwin->_cury, --ox, ' ' | attr);
+            mvwaddch(curwin, getcury(curwin), --ox, ' ' | attr);
 #else
-            mvwaddch(curwin, curwin->_cury, --ox, ' ');
+            mvwaddch(curwin, getcury(curwin), --ox, ' ');
 #endif
 #endif                                /* 0 */
-            mvwaddch(curwin, curwin->_cury, --ox, ' ');
-            wmove(curwin, curwin->_cury, ox);
+            mvwaddch(curwin, getcury(curwin), --ox, ' ');
+            wmove(curwin, getcury(curwin), ox);
           } else {
-            oy = curwin->_cury - 1;
+            oy = getcury(curwin) - 1;
 #if 0
 #ifdef ATTRIBUTE
             mvwaddch(curwin, oy, COLS - 1, ' ' | attr);
@@ -449,12 +449,12 @@ agets5(char *str, int maxchar, int attr)
           if (ox--)
 #if 0
 #ifdef ATTRIBUTE
-            mvwaddch(curwin, curwin->_cury, ox, ' ' | attr);
+            mvwaddch(curwin, getcury(curwin), ox, ' ' | attr);
 #else
-            mvwaddch(curwin, curwin->_cury, ox, ' ');
+            mvwaddch(curwin, getcury(curwin), ox, ' ');
 #endif
 #endif                                /* 0 */
-          mvwaddch(curwin, curwin->_cury, ox, ' ');
+          mvwaddch(curwin, getcury(curwin), ox, ' ');
           else
 #if 0
 #ifdef ATTRIBUTE
