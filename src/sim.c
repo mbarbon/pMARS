@@ -141,15 +141,9 @@ while (0)
 #define SUBMOD(A,B,C) do { if ((C=(int) A-B)<0) C+=coreSize; } \
 while (0)
 
-#ifdef NEW_STYLE
 extern int posit(void);
 extern void npos(void);
 extern S32_T rng(S32_T seed);
-#else
-extern int posit();
-extern void npos();
-extern S32_T rng();
-#endif
 
 /* strings */
 extern char *outOfMemory;
@@ -185,14 +179,8 @@ int     warriorsLeft;                /* number of warriors still left in core */
 warrior_struct *endWar;                /* end of the warriors array */
 
 /*--------------------*/
-#ifdef NEW_STYLE
 S32_T
 checksum_warriors(void)
-#else
-S32_T
-checksum_warriors()
-#endif
-
 {
   int     shuffle = 0;                /* XOR with position-dependent int */
   S32_T   checksum = 0;                /* accumulator */

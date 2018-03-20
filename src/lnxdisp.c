@@ -149,7 +149,6 @@ extern char    *noMouse;
 extern char    *cantSetMode;
 
 /* function prototypes */
-#ifdef NEW_STYLE
 static void     draw_mouse_cursor(int show, int newx, int newy);
 static void     svga_outtextxy(int x, int y, char *s);
 static int      conv_chr(char *buf, int *ndx, int maxndx);
@@ -161,19 +160,6 @@ static void     delchar(void);
 static int      mouse_or_key(char *result);
 static char    *special_keys(int key, char *buf);
 static void     write_names(void);
-#else
-static void     draw_mouse_cursor();
-static void     svga_outtextxy();
-static int      conv_chr();
-static char     keypressed();
-static void     graphio_init();
-static void     newline();
-static void     newchar();
-static void     delchar();
-static int      mouse_or_key();
-static char    *special_keys();
-static void     write_names();
-#endif
 
 /* some convenient macros */
 #define setcolor(color) vga_setcolor(curColor = color)

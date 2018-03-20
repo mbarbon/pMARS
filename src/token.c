@@ -28,11 +28,7 @@
 
 /* **************************** Prototype ******************************** */
 
-#ifdef NEW_STYLE
 #define toupper_(x) (toupper(x))
-#else
-#define toupper_(x) (isalpha(x) && islower(x) ? toupper(x) : (x))
-#endif
 
 /* *************************** definitions ******************************* */
 

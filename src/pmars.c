@@ -63,7 +63,6 @@
 void _cdecl sighandler(int);
 #endif
 
-#ifdef NEW_STYLE
 void    init(void);
 extern void results(FILE * outp);
 void    body(void);
@@ -77,22 +76,6 @@ void    sighandler(int dummy);
 #endif
 #if defined(CURSESGRAPHX)
 extern void end_curses(void);
-#endif
-#else
-void    init();
-extern void results();
-void    body();
-void    Exit();
-int     returninfo();
-#ifdef PSPACE
-void    pspace_init();
-#endif
-#if defined(unix) || defined(__MSDOS__)
-void    sighandler();
-#endif
-#if defined(CURSESGRAPHX)
-extern void end_curses();
-#endif
 #endif
 
 /* external strings */

@@ -40,7 +40,6 @@ typedef struct win_st {
   struct win_st *nextwin;
 }       win_t;
 
-#ifdef NEW_STYLE
 extern void init_curses(void), end_curses(void);
 extern void switch_page(int);
 extern void escape(char *, char *, int);
@@ -54,16 +53,6 @@ extern void cur_display_init(void);
 extern void text_panel_update(int), update_statusline(int);
 extern win_t *createwindow(int, int, int, int, int);
 extern void closewindow(int), winupdate(void);
-#else
-extern void init_curses(), end_curses();
-extern void escape();
-extern void SetCursor(), aputs5(), clear_page5();
-extern char *agets5(), *ckey2macro();
-extern void sighandler();
-extern void cur_display_init(), switch_page(), text_panel_update();
-extern void closewindow(), winupdate(), update_statusline();
-extern win_t *createwindow();
-#endif
 
 /* strings */
 extern char *cannotAllocateVirtualScreen;

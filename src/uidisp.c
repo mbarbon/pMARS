@@ -21,15 +21,10 @@
  * $Id: uidisp.c,v 1.1.1.1 2000/08/20 13:29:47 iltzu Exp $
  */
 
-#ifdef NEW_STYLE
 char   *ckey2macro(int ccode, char *buf);
 char   *ukey2macro(int ucode, char *buf);
 char   *xkey2macro(int code, char *buf);
-#else
-char   *ckey2macro();
-char   *ukey2macro();
-char   *xkey2macro();
-#endif
+
 #if ! defined(CURSESGRAPHX)
 #if defined(DJGPP) || defined(WATCOM)
 #define KEYPRESSED kbhit()

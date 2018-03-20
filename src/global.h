@@ -39,11 +39,7 @@
    ********************************************************************* */
 
 /* Generic Pointer type */
-#if defined(NEW_STYLE)
 typedef void *pointer_t;
-#else
-typedef char *pointer_t;
-#endif
 
 #if defined(DOS16)
 
@@ -120,10 +116,6 @@ enum {
 /* ************************************************************************
    pmars global structures and definitions
    ************************************************************************ */
-
-#if defined(__STDC__)  || defined(DOS16)
-#define NEW_STYLE
-#endif
 
 /* Version and date */
 
@@ -398,8 +390,6 @@ extern unsigned long loopDelayAr[SPEEDLEVELS];
    function prototypes
    *********************************************************************** */
 
-#ifdef NEW_STYLE
-
 extern int
         parse_param(int argc, char *argv[]);
 extern int eval_expr(char *expr, long *result);
@@ -452,52 +442,4 @@ extern void xWin_resize(void);
 extern char *cellview(mem_struct far * cell, char *outp, int emptyDisp);
 #else
 extern char *cellview(mem_struct * cell, char *outp, int emptyDisp);
-#endif
-
-#else
-
-extern int
-        parse_param();
-extern int
-        eval_expr();
-extern int assemble();
-extern void disasm();
-extern void simulator1();
-extern char *locview();
-extern char *cellview();
-extern int cdb();
-extern int score();
-extern int deaths();
-extern void results();
-extern void Exit();
-extern void reset_regs();
-extern void set_reg();
-
-#if defined(CURSESGRAPHX)
-extern void decode_vopt();
-extern void aputs5();
-#endif
-
-#if defined (LINUXGRAPHX)
-extern char *svga_gets();
-extern void svga_puts();
-extern void svga_display_close();
-extern void svga_write_menu();
-extern void svga_open_graphics();
-extern void svga_clear();
-extern void svga_update();
-extern void svga_clear_arena();
-extern int svga_getch();
-#endif
-
-#if defined(XWINGRAPHX)
-extern void xWin_puts();
-extern void xWin_write_menu();
-extern void xWin_clear();
-extern void xWin_update();
-extern void xWin_display_close();
-extern char *xWin_gets();
-extern void xWin_resize();
-#endif
-
 #endif

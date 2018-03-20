@@ -184,7 +184,6 @@ extern char *invalidGeom;
 #define cursoroff() xWin_cleartextxy(posx, posy, clearGC)
 
 /* function prototypes */
-#ifdef NEW_STYLE
 static void setcolor(int c);
 static void xWin_cleartextxy(int x, int y, GC gc);
 static void xWin_outtextxy(int x, int y, char *s);
@@ -213,34 +212,6 @@ static void get_gc(void);
 static void handle_event(XEvent * event);
 static void init_xwin(void);
 static void draw_border(void);
-#else
-static void setcolor();
-static void xWin_cleartextxy();
-static void xWin_outtextxy();
-static unsigned long conv_key();
-static unsigned long xWin_getch();
-static void graphio_init();
-static void newline();
-static void newchar();
-static void
-        delchar();
-static int mouse_or_key();
-static char *special_keys();
-static int xkoord();
-static int ykoord();
-static void findplace();
-static void xWin_clear_arena();
-static void write_names();
-static void redraw();
-static void my_err();
-static int make_int();
-static void parse_geometry();
-static void alloc_colors();
-static void get_gc();
-static void handle_event();
-static void init_xwin();
-static void draw_border();
-#endif
 
 /**********************************************************************/
 /*   misc and util functions                                                                                                                 */

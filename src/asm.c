@@ -209,16 +209,11 @@ FILE   *dias;
 
 /* ****************** required local prototypes ********************* */
 
-#ifdef NEW_STYLE
 static void textout(char *);
 static void errprn(errType, line_st *, char *);
-#else
-static void textout(), errprn();
-#endif
 
 /* ***************** conforming local prototypes ******************** */
 
-#ifdef NEW_STYLE
 #ifndef SERVER
 static void lineswitch(char *, uShrt, line_st *);
 #endif
@@ -243,22 +238,6 @@ static void nocmnt(char *);
 static void automaton(char *, stateCol, mem_struct *);
 static void dfashell(char *, mem_struct *);
 static void expand(uShrt), encode(uShrt);
-#else
-#ifndef SERVER
-static void lineswitch();
-#endif
-static int globalswitch(), trav2(), normalize();
-static int blkfor(), equtbl(), equsub();
-static ref_st *lookup();
-static grp_st *addsym();
-static src_st *addlinesrc();
-static void newtbl(), addpredef(), addline();
-static void addpredefs();
-static void show_info(), show_lbl();
-static void disposeline(), disposegrp(), disposetbl();
-static void cleanmem(), nocmnt();
-static void automaton(), dfashell(), expand(), encode();
-#endif
 
 /* ************************** Functions ***************************** */
 

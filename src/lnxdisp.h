@@ -40,7 +40,6 @@ extern int      datcolors[];	/* deatch colors of the warriors */
 extern int      clearColor;	/* the color to erase with, ie. BLACK */
 
 /* extern prototype declaration */
-#ifdef NEW_STYLE
 extern void     svga_open_graphics(void);
 extern void     svga_display_cycle(void);
 extern void     svga_display_clear(void);
@@ -48,15 +47,6 @@ extern int      xkoord(int addr);
 extern int      ykoord(int addr);
 extern void     findplace(int addr);
 extern void     gl_rect(int x, int y, int xx, int yy, int c);
-#else
-extern void     svga_open_graphics();
-extern void     svga_display_cycle();
-extern void     svga_display_clear();
-extern int      xkoord();
-extern int      ykoord();
-extern void     findplace();
-extern void     gl_rect();
-#endif
 
 /* functional macros needed by sim.c */
 #define display_die(warnum)

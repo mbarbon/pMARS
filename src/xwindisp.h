@@ -27,7 +27,6 @@
 #define XWINDISP_H
 
 /* extern prototype declaration */
-#ifdef NEW_STYLE
 extern void     xWin_open_graphics(void);
 extern void     xWin_display_cycle(void);
 extern void     xWin_display_clear(void);
@@ -38,18 +37,6 @@ extern void     xWin_display_write(int addr);
 extern void     xWin_display_exec(int addr);
 extern void     xWin_display_spl(int warrior, int tasks);
 extern void     xWin_display_dat(int addr, int warNum, int tasks);
-#else
-extern void     xWin_open_graphics();
-extern void     xWin_display_cycle();
-extern void     xWin_display_clear();
-extern void     xWin_display_read();
-extern void     xWin_display_dec();
-extern void     xWin_display_inc();
-extern void     xWin_display_write();
-extern void     xWin_display_exec();
-extern void     xWin_display_spl();
-extern void     xWin_display_dat();
-#endif
 
 /* functional macros needed by sim.c */
 #define display_die(warnum)

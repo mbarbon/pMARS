@@ -83,7 +83,6 @@ void
         macputs(char *outputstr);
 #endif
 
-#ifdef NEW_STYLE
 void
         strip(char *argv[]);
 void
@@ -95,14 +94,6 @@ clp_parse(clp_opt_t clopt[],
           parse_param(int argc, char **argv);
   int
           next_input(FILE * filep, char *inputs);
-
-#else
-void    print_usage();
-int     next_input();
-int     clp_parse();
-int     parse_param();
-
-#endif
 
 static char *describe[] = {"#", "#", "#", " ", "$"};
 

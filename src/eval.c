@@ -77,19 +77,11 @@ enum {
 #define SKIP_SPACE(e) while(isspace(*(e))) ++(e)
 
 /* function prototypes */
-#ifdef NEW_STYLE
 char   *eval(int prevPrec, long val, char operator, char *expr, long *result);
 char   *getreg(char *expr, int regId, long *val);
 char   *getval(char *expr, long *val);
 char   *getop(char *expr, char *op);
 long    calc(long x, long y, int op);
-#else
-char   *eval();
-char   *getreg();
-char   *getval();
-char   *getop();
-long    calc();
-#endif
 
 /* global error flag */
 int     evalerr;
@@ -285,16 +277,8 @@ getval(expr, val)
 }
 
 /*--------------------*/
-#ifdef NEW_STYLE
 char   *
 eval(int prevPrec, long val1, char oper1, char *expr, long *result)
-#else
-char   *
-eval(prevPrec, val1, oper1, expr, result)
-  int     prevPrec;
-  char    oper1, *expr;
-  long    val1, *result;
-#endif
 {
   long    result2, val2;
   char    oper2;

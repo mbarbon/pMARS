@@ -74,11 +74,7 @@ char   *CDB_PROMPT = "(cdb) ";
 #define targetSelect(index) (targetID == CORE || targetID == PSP ?\
         index : (targetID == QUEUE ?\
         queue(index) : (W-warrior==index ? progCnt : *warrior[index].taskHead)))
-#ifdef NEW_STYLE
 #define toupper_(x) (toupper(x))
-#else
-#define toupper_(x) (isalpha(x) && islower(x) ? toupper(x) : (x))
-#endif
 
 /* hash value constants */
 #define NULL_H 0
@@ -170,7 +166,6 @@ char   *CDB_PROMPT = "(cdb) ";
 /*
  * prototypes
  */
-#ifdef NEW_STYLE
 int     cdb(char *msg);
 char   *get_cmd(char *prompt);
 int
@@ -253,42 +248,6 @@ extern void CacheScreenUpdate(short *buf);
 #endif                                /* DOSTXTGRAPHX */
 #endif                                /* DJGPP */
 
-#else
-int     cdb();
-char   *get_cmd();
-int     parse_cmd();
-int     subst_eval();
-void    substitute();
-void    help();
-void    print_core();
-void    set_trace();
-void    unset_trace();
-void    print_registers();
-void    edit_core();
-void    fill_core();
-unsigned int hash_str();
-void    cdb_fputs();
-int     wildsearch();
-void    load_macros();
-char   *match_macro();
-void    print_macros();
-void    exec_macro();
-void    bad_arg();
-ADDR_T  queue();
-char   *pspaceview();
-char   *queueview();
-char   *warriorview();
-static char *(*targetview) () = locview;
-char   *strstr();
-extern int parse();
-#ifdef CURSESGRAPHX
-extern void init_curses();
-extern void end_curses();
-extern void winupdate();
-extern char *agets5();
-#endif
-#endif
-
 /* strings */
 extern char *pagePrompt, *exitingCdbToFinishSimulation, *usageDisplay, *usageExecute,
        *usageMoveable, *pressAnyKeyToContinue, *usageSkip, *usageWrite,
@@ -334,24 +293,6 @@ int     curPanel = 0;
 ADDR_T  curAddr2;
 #endif
 
-#if !defined(NEW_STYLE) && !defined(VMS)
-char   *
-strstr(cs, ct)
-  char   *cs, *ct;
-{
-  char   *p, *q, *r;
-
-  for (p = cs; *p != 0; ++p) {
-    for (q = p, r = ct; *r != 0; ++q, ++r) {
-      if (*q != *r)
-        goto next_sub;
-    }
-    return p;
-next_sub:;
-  }
-  return NULL;
-}
-#endif
 /*---------------------------------------------------------------------------
  cdb - main debugger loop, command dispatcher
  ---------------------------------------------------------------------------*/

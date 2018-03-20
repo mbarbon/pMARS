@@ -42,16 +42,8 @@
 extern char addr_sym[], expr_sym[], spc_sym[];
 extern char *opname[], *modname[];
 
-#if defined(NEW_STYLE)
 extern char *pstrdup(char *), *pstrcat(char *, char *), *pstrchr(char *, int);
 extern uChar ch_in_set(uShrt, char *), skip_space(char *, uShrt);
 extern uChar str_in_set(char *, char *s[]);
 extern int get_token(char *, uChar *, char *);
 extern void to_upper(char *);
-#else
-extern char *pstrdup(), *pstrcat(), *pstrchr();;
-extern uChar ch_in_set(), skip_space();
-extern uChar str_in_set();
-extern int get_token();
-extern void to_upper();
-#endif

@@ -23,11 +23,9 @@
 #include "global.h"
 #include "sim.h"
 
-#ifdef NEW_STYLE
 int     posit(void);
 void    npos(void);
 S32_T   rng(S32_T seed);
-#endif
 
 /* minimal standard random number generator; integer version 2
  * Communications of the ACM, 31:10 (1988)
