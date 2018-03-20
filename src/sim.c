@@ -18,7 +18,7 @@
 
 /*
  * sim.c: simulator
- * $Id: sim.c,v 1.2 2000/08/20 13:29:43 anton Exp $
+ * $Id: sim.c,v 1.3 2000/10/23 04:43:50 anton Exp $
  *
  * 10-23-98 Pentium optimized version 30% faster than the original
  *          Ken Espiritu
@@ -1144,7 +1144,7 @@ if (IR.B_mode != (FIELD_T) IMMEDIATE)
 	display_die(W - warrior);
 	W->score[warriorsLeft + warriors - 2]++;
 	cycle = cycle - 1 - (cycle - 1) / (warriorsLeft--);
-	if (warriorsLeft < 3)
+	if (warriorsLeft < 2)
 	  goto nextround;        /* can't use break because in switch */
 
 #ifndef SERVER

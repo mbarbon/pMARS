@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1995 Albert Ma, Na'ndor Sieben, Stefan Strack, Mintardjo Wangsawidjaja and Martin Maierhofer
+ * Copyright (C) 2000 Philip Kendall
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * xwindisp.c: user interface for XWindows graphics displays
- * $Id: xwindisp.c,v 1.2 2000/08/20 13:29:49 anton Exp $
+ * $Id: xwindisp.c,v 1.3 2000/09/28 11:03:56 anton Exp $
  */
 
 #ifdef XWINGRAPHX
@@ -175,6 +176,7 @@ extern char *noBackingStore;
 extern char *needColorDisplay;
 extern char *colorNotFound;
 extern char *noColorAvailable;
+extern char *privateMap;
 extern char *invalidGeom;
 
 /* nice macros for displaying/hiding the cursor */
@@ -491,9 +493,17 @@ alloc_colors()
       fprintf(stderr, colorNotFound, colorNames[i]);
       Exit(1);
     }
-    if (!XAllocColor(display, colormap, &c))
-      my_err(noColorAvailable);
-
+    /* If the color allocation fails and we are using the default
+       colormap, switch to a private colormap and continue */
+    if (!XAllocColor(display, colormap, &c)) {
+      if(colormap == DefaultColormap(display, screenNum)) {
+	fprintf(stderr, privateMap, colorNames[i]);
+	colormap = XCopyColormapAndFree(display, colormap);
+	i--;
+      } else {
+	my_err(noColorAvailable);
+      }
+    }
     xColors[i] = c.pixel;
   }
 }
@@ -1589,6 +1599,10 @@ init_xwin()
   /* and now create the window */
   xwindow = XCreateSimpleWindow(display, RootWindow(display, screenNum),
                      x, y, xsize, ysize, 0, xColors[WHITE], xColors[BLACK]);
+  /* If we needed to change to a private colormap, install it
+     here */
+  if(colormap != DefaultColormap(display, screenNum))
+    XSetWindowColormap(display, xwindow, colormap);
 
   get_gc();                        /* allocate the GCs */
 

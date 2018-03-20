@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Philip Kendall
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +18,8 @@
  */
 
 /*
- * strings.c: externalized messages for easy translation (ENGLISH version)
- * $Id: str_eng.c,v 1.3 2000/08/21 09:34:34 anton Exp $
+ * str_eng.c: externalized messages for easy translation (ENGLISH version)
+ * $Id: str_eng.c,v 1.4 2000/09/28 11:03:54 anton Exp $
  */
 
 #include "global.h"
@@ -223,6 +224,7 @@ char   *noBackingStore = "X Server doesn't support backing store\n";
 char   *needColorDisplay = "Need a color display\n";
 char   *colorNotFound = "Color name \"%s\" not found in database\n";
 char   *noColorAvailable = "Can't allocate color, all cells allocated and no one matches\n";
+char   *privateMap = "Can't allocate color \"%s\"; switching to private colormap\n";
 char   *invalidGeom = "Invalid geometry specification\n";
 #endif                                /* XWINGRAPHX */
 
