@@ -1,4 +1,4 @@
-README for pMARS version 0.8.0 - portable corewar system with ICWS'94 extensions
+README for pMARS version 0.9.0 - portable corewar system with ICWS'94 extensions
 
 ____________________
 What is Core War?
@@ -10,45 +10,21 @@ What is Core War?
     the game is to prevent the other program(s) from executing. For more
     information about Core War check out the usenet newsgroup rec.games.corewar
     and its FAQ list ftp://rtfm.mit.edu/pub/usenet/games/corewar-faq
-    or send E-mail to Stefan.Strack@Vanderbilt.edu.
+    or go to http://www.koth.org/.
 
 ____________________
 pMARS highlights
 
-    o portable, run it on your Mac at home or VAX at work
-    o free and comes with source
-    o core displays for DOS, Mac and UNIX
-    o implements a new redcode dialect, ICWS'94, while remaining compatible
+    * portable, run it on your Mac at home or VAX at work
+    * free and comes with source
+    * core displays for DOS, Mac and UNIX
+    * implements a new redcode dialect, ICWS'94, while remaining compatible
       with ICWS'88
-    o powerful redcode extensions: multi-line EQUates, FOR/ROF text repetition
-    o one of the fastest simulators written in a high level language
-    o full-featured, programmable debugger
-    o runs the automated tournament "KotH" at stormking.com and
-      ecst.csuchico.edu and the annual ICWS tournaments
-
-____________________
-Archives
-
-    pMARS and related programs are distributed as either source or binary
-    compiled for different platforms in one of these archives:
-
-    pmars08s.zip - C source, including UNIX and DOS displays
-
-    pmars08.zip  - DOS binaries (386 and up)
-
-    MacpMARS.*s.cpt.hqx - Mac GUI code (* is the version number), Mac source
-        and binary may not necessarily be up to date with the UNIX/DOS
-        version.
-
-    MacpMARS.*.cpt.hqx - Mac binary
-
-    pvms08.zip - VMS binary
-
-    pvms08.zip - COM files to build pMARS and help system for VMS
-
-    ptools10.zip - pMARS related programs as DOS binary and C source: mts,
-        mopt, pshell, etc. These programs were previously part of the main
-        pMARS archive.
+    * powerful redcode extensions: multi-line EQUates, FOR/ROF text repetition
+    * one of the fastest simulators written in a high level language
+    * full-featured, programmable debugger
+    * runs the automated tournament "KotH" at http://www.koth.org and
+      http://www.ecst.csuchico.edu/~pizza/koth/ and the annual ICWS tournaments
 
 ____________________
 Documentation
@@ -58,22 +34,10 @@ Documentation
     -man. pmars.doc contains man pages without control characters that have
     been formatted for printing.
 
-    primer.94 and primer.cdb contain short introductions to the ICWS'94 draft
-    and the cdb debugger respectively. redcode.ref is a quick reference to
-    the redcode syntax supported by pMARS. whatsnew.080, a "must read",
-    describes the new pMARS features. CONTRIB has guidelines for porting
+    doc/primer.94 and doc/primer.cdb contain short introductions to the ICWS'94
+    draft and the cdb debugger respectively. redcode.ref is a quick reference to
+    the redcode syntax supported by pMARS. CONTRIB has guidelines for porting
     pMARS to new platforms and contributing new display code.
-
-____________________
-DOS executables
-
-    pmars08.zip contains two pMARS binaries. pmars.exe is a fast tournament
-    version without display capabilities; pmarsv.exe sports a graphical core
-    display in VGA, SVGA, standard and extended text modes. Both support core
-    sizes of up to several hundred thousand - the exact number depends on how
-    much free memory you have - and require a 386 or better processor. The
-    32-bit DOS extender go32.exe must be in the PATH for these programs to
-    run. More on the DOS binaries can be found in the addendum of pmars.doc.
 
 ____________________
 Compiling the source
@@ -171,12 +135,10 @@ Platforms
         * Bug reports are welcome - just drop a note to m.maierhofer@ieee.org
 
     DOS
-        We will continue to provide a compiled 32-bit executable for DOS, but
-        you can make your own executable if you want to experiment. You need
-        the free 32-bit DOS compiler DJGPP - a DOS port of gcc - and ndmake or
-        some other make program. pMARS also compiles with the 16-bit DOS
-        compilers of the Borland/Turbo C family, but the maximum number of
-        warriors is limited to 8 because of memory constraints.
+        You will need the free 32-bit DOS compiler DJGPP - a DOS port of gcc -
+        and ndmake or some other make program. pMARS also compiles with the
+        16-bit DOS compilers of the Borland/Turbo C family, but the maximum
+        number of warriors is limited to 8 because of memory constraints.
 
         The GRAPHX compile directive enables the combined VGA/textmode
         display of pmarsv.exe. You can enable the graphics and textmode
@@ -210,131 +172,4 @@ Language support
     include the new str_???.c in the next release and might even release the
     foreign language binaries.
 
-____________________
-Version history
-
-    0.0.1 8/17/93: Initial release
-    0.1.1 9/1/93 : post-mortem debugger avoidable, doc fixes
-    0.1.2 9/9/93 : Mac compiler define fixed, initial core instr. not displayed
-    0.2.0 9/12/93: cdb command chains; ! repetitor
-    0.2.1 9/19/93: fixed display bug in cdb.c; max. instr. increased to 500
-    0.2.2 9/29/93: Text/Graphics display with cdb for DOS, -v, -K seeds RNG
-    0.3.0 10/23/93:DOS/Mac version simulator bug fixed, JMN/DJN fixed
-    0.3.1 10/27/93:fixed small bug in pmarsv.exe
-    0.4.0 1/19/94 : curses display, macros, scroll keys, registers
-    0.5.0 4/10/94: 2-panel cdb, pqueue, if, reset, SEQ, SNE, NOP
-    0.5.1 5/1/94:  Graphics display for big core pmarsv.exe
-    0.6.0 6/8/94:  A-field indirect modes, merged FOR/ROF and EQU pass, ;assert
-    0.6.1 6/22/94: curses display status bar, minor speed improvement
-    0.6.2 7/16/94: fixed } mode bug, ignores text before ;redcode
-    0.6.3 8/9/94: minor ;assert bug fixed
-    0.7.0 4/15/95: multi-warrior capabilities, -@, stdin warrior/option input
-    0.7.1 4/17/95: minor compatibility fixes
-    0.7.5 6/11/95: score formula option, linux/SVGA display, VMS port
-    0.8.0 8/5/95:  LDP,STP,PIN; X Windows display
-
-____________________
-Disclaimer
-
-    pMARS source and documentation is copyrighted freeware. It may be
-    distributed freely as long as no more than the costs for media and
-    shipping is charged. Contact the authors for special arrangements.
-    The authors are not responsible for any damage resulting from use
-    of this program.
-
-    You are free to modify the source, but may not distribute the
-    modified source or executable without permission by the authors.
-    Please share any improvements you make with us.
-
-____________________
-Authors
-
-    pMARS is brought to you by:
-
-    Albert Ma (ama@athena.mit.edu)
-    Nandor Sieben (nandor.sieben@asu.edu)
-    Stefan Strack (stst@vuse.vanderbilt.edu)
-    Mintardjo Wangsaw (wangsawm@csos.orst.edu)
-
-    Alex Macaulay (macaulay@mundil.cs.mu.oz.au) wrote the Macintosh
-    front-end. Martin Maierhofer (m.maierhofer@ieee.org) contributed the
-    code for the X-Windows and the linux SVGA displays. Nathan Summers
-    (00ncsummers@bsuvc.bsu.edu) ported pMARS to VMS.
-
-____________________
-Join the team!
-
-    pMARS is a group project; apart from us four original developers, there
-    are currently people working on display versions for other systems.
-    We invite you to become part of the team by porting pMARS to even more
-    operating systems and GUIs. In particular, we would like to see pMARS run
-    under:
-
-        o OS/2 with PM display
-        o Motif
-        o MS-Windows/Windows NT
-        o Atari
-
-     See the file CONTRIB for details.
-
-____________________
-Questionaire
-
-    We need your feedback to guide our development efforts. Please take some
-    time to fill out the questionaire below and email it to
-    nandor.sieben@asu.edu. The improvements you suggest may be realized in the
-    next pMARS release!
-
------ CUT HERE ---------- CUT HERE ---------- CUT HERE ---------- CUT HERE -----
-A) General:
-
-1) Which corewar simulator(s) do you use, which most often ?
-
-_____________________________________________________
-
-2) What machine(s), OS(s) do you run corewar on ?
-
-_____________________________________________________
-
-
-3) Why do you prefer the simulator you use most often ?
-
-_____________________________________________________
-
-B) About pMARS:
-
-1) What machine/OS do you use to run pMARS (Unix/DOS/Mac/...) ?
-
-_____________________________________________________
-
-2) What kind of coreviewer do you use most often (DOS text/graphics/
-   curses/none) ?
-
-_____________________________________________________
-
-3) How would you rank pMARS from 1 to 10 in terms of
-        speed                  __ ____________ (optional comments)
-        display features       __ ____________
-        ease of use            __ ____________
-        debugging capabilities __ ____________
-        stability              __ ____________
-
-4) What would you like to see changed/added in future releases of pMARS?
-
-_____________________________________________________
-
-5) Did you read the documentations files or do you depend on the online help ?
-How would you rate documentation and online help?
-
-_____________________________________________________
-
-6) Do you use the menuing frontend pshell on DOS? If so, how do you like it
-and what would you like to see added or improved?
-
-_____________________________________________________
-
-Check here if you would like to be informed of new releases by email:
-
-        __ email address: __________________
-
-$Id: README,v 1.9 1995/08/06 20:36:40 stst Exp stst $
+$Id: README,v 1.4 2000/08/31 10:22:56 anton Exp $
