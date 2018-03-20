@@ -297,8 +297,7 @@ ADDR_T  curAddr2;
  cdb - main debugger loop, command dispatcher
  ---------------------------------------------------------------------------*/
 int
-cdb(message)
-  char   *message;
+cdb(char *message)
 {
   char   *cmdStr, *fnStr, verbStr[MAXCMD + 1], argStr[MAXARG + 1];
   static long start, stop;
@@ -946,8 +945,7 @@ cdb(message)
  queue - return address at process queue position
  ---------------------------------------------------------------------------*/
 ADDR_T
-queue(index)
-  int     index;
+queue(int index)
 {
   if (!index)
     return progCnt;
@@ -971,9 +969,8 @@ queue(index)
  Warning: this is probably the worst spaghetti code in pmars; change at your
         your own risk!
  ---------------------------------------------------------------------------*/
-char   *
-get_cmd(prompt)
-  char   *prompt;
+char *
+get_cmd(char *prompt)
 {
   static int curCmd = 0, nextCmd = 0, loopNesting;
   static long repeating = 0, loopStack[MAXLOOPNESTING];
@@ -1302,9 +1299,7 @@ advance:
     wout==COND      output to STDOUT may be supressed by '@' or '&'
  ---------------------------------------------------------------------------*/
 void
-cdb_fputs(str, wout)
-  char   *str;
-  int     wout;
+cdb_fputs(char *str, int wout)
 {
   if ((silent != 2 || wout == FORCE) && logfile && (fputs(str, logfile) == EOF))
 #if defined(DOSALLGRAPHX)
@@ -1381,8 +1376,7 @@ cdb_fputs(str, wout)
  bad_arg - report argument error
  ---------------------------------------------------------------------------*/
 void
-bad_arg(argStr)
-  char   *argStr;
+bad_arg(char *argStr)
 {
   sprintf(outs, badArgument, argStr);
   cdb_fputs(outs, FORCE);
@@ -1392,9 +1386,7 @@ bad_arg(argStr)
  length<=3 to fit in int
  ---------------------------------------------------------------------------*/
 unsigned int
-hash_str(str, length)
-  char   *str;
-  int     length;
+hash_str(char *str, int length)
 {
   int     hash = 0, mul, i, j;
 
@@ -1409,8 +1401,7 @@ hash_str(str, length)
  substitute(in,repl,with,out) - substitute all "repl" in "in" with "with"
  ---------------------------------------------------------------------------*/
 void
-substitute(in, repl, with, out)
-  char   *in, *repl, *with, *out;
+substitute(char *in, char *repl, char *with, char *out)
 {
   /* caller is using all three global buffers */
   char    out2[MAXARG + 1];
@@ -1439,9 +1430,7 @@ substitute(in, repl, with, out)
  (others can be easily added)
  ---------------------------------------------------------------------------*/
 int
-subst_eval(inpStr, result)
-  char   *inpStr;
-  long   *result;
+subst_eval(char *inpStr, long *result)
 {
   int evalerr;
   char    buf[2][MAXARG + 1], outs2[MAXARG + 1], *pos;
@@ -1558,9 +1547,7 @@ subst_eval(inpStr, result)
  parse_cmd - into verb,range,argument string
  ---------------------------------------------------------------------------*/
 int
-parse_cmd(inpStr, verbStr, start, stop, argStr)
-  char   *inpStr, *verbStr, *argStr;
-  long   *start, *stop;
+parse_cmd(char *inpStr, char *verbStr, long *start, long *stop, char *argStr)
 {
   register S32_T i;
   long    result1, result2;
@@ -1636,7 +1623,7 @@ parse_cmd(inpStr, verbStr, start, stop, argStr)
  help - show command help
  ---------------------------------------------------------------------------*/
 void
-help()
+help(void)
 {
   int     count = 0, showLines, helpIdx;
 #if defined(DOSALLGRAPHX)
@@ -1691,8 +1678,7 @@ help()
  print_core - list core addresses in range start-stop
  ---------------------------------------------------------------------------*/
 void
-print_core(start, stop)
-  ADDR_T  start, stop;
+print_core(ADDR_T start, ADDR_T stop)
 {
   int     count = 0;
   int     showLines;
@@ -1781,8 +1767,7 @@ print_core(start, stop)
  set_trace - set trace bit of addresses in range start-stop
  ---------------------------------------------------------------------------*/
 void
-set_trace(start, stop)
-  ADDR_T  start, stop;
+set_trace(ADDR_T start, ADDR_T stop)
 {
   do {
     if (start == targetSize)
@@ -1794,8 +1779,7 @@ set_trace(start, stop)
  unset_trace - clear trace bit of addresses in range start-stop
  ---------------------------------------------------------------------------*/
 void
-unset_trace(start, stop)
-  ADDR_T  start, stop;
+unset_trace(ADDR_T start, ADDR_T stop)
 {
   do {
     if (start == targetSize)
@@ -1807,7 +1791,7 @@ unset_trace(start, stop)
  print_registers - show simulator status
  ---------------------------------------------------------------------------*/
 void
-print_registers()
+print_registers(void)
 {
 #ifdef DOS16
   ADDR_T far *thisProc;
@@ -1941,8 +1925,7 @@ print_registers()
  edit_core - modify range of core addresses
  ---------------------------------------------------------------------------*/
 void
-edit_core(start, stop)
-  ADDR_T  start, stop;
+edit_core(ADDR_T start, ADDR_T stop)
 {
   int evalerr;
   long    result;
@@ -2004,8 +1987,7 @@ edit_core(start, stop)
  fill_core - fill range of core addresses with instruction
  ---------------------------------------------------------------------------*/
 void
-fill_core(start, stop)
-  ADDR_T  start, stop;
+fill_core(ADDR_T start, ADDR_T stop)
 {
   int evalerr;
   long    sstart, sstop;
@@ -2059,8 +2041,7 @@ fill_core(start, stop)
                    ? matches one char in target
  ---------------------------------------------------------------------------*/
 int
-wildsearch(pattern, target)
-  char   *pattern, *target;
+wildsearch(char *pattern, char *target)
 {
   register char *pat = pattern, *tar = target;        /* local copies */
   while (1) {
@@ -2085,8 +2066,7 @@ wildsearch(pattern, target)
  load_macros() - load macros from file
  ---------------------------------------------------------------------------*/
 void
-load_macros(fnStr)
-  char   *fnStr;
+load_macros(char *fnStr)
 {
   int     i, j, tabIdx, macroLen, conLine;
   FILE   *mfp;
@@ -2214,9 +2194,8 @@ load_macros(fnStr)
  match_macro - compare macro name to macro definition, return ptr to
         first char after "=" in definition if match, NULL if not.
  ---------------------------------------------------------------------------*/
-char   *
-match_macro(match, macroDef)
-  char   *match, *macroDef;
+char *
+match_macro(char *match, char *macroDef)
 {
   register int i;
 
@@ -2230,7 +2209,7 @@ match_macro(match, macroDef)
  print_macros - list all macros currently in memory
  ---------------------------------------------------------------------------*/
 void
-print_macros()
+print_macros(void)
 {
   int     count = 0, showLines, macroIdx;
 #if defined(DOSALLGRAPHX)
@@ -2285,8 +2264,7 @@ print_macros()
  exec_macro - execute macro by queuing as a command line
  ---------------------------------------------------------------------------*/
 void
-exec_macro(macro)
-  char   *macro;
+exec_macro(char *macro)
 {
   int     macroIdx;
 
@@ -2312,10 +2290,8 @@ exec_macro(macro)
 /*---------------------------------------------------------------------------
  queueview - locview for queue mode: return instruction at queue(loc)
  ---------------------------------------------------------------------------*/
-char   *
-queueview(loc, outp)
-  ADDR_T  loc;
-  char   *outp;
+char *
+queueview(ADDR_T loc, char *outp)
 {
   char    buf[MAXSTR];
   ADDR_T  qloc = queue(loc);
@@ -2327,10 +2303,8 @@ queueview(loc, outp)
 /*---------------------------------------------------------------------------
  warriorview - locview for warrior mode: return instruction at warrior[loc].taskHead
  ---------------------------------------------------------------------------*/
-char   *
-warriorview(loc, outp)
-  ADDR_T  loc;
-  char   *outp;
+char *
+warriorview(ADDR_T loc, char *outp)
 {
   char    buf[MAXSTR];
   ADDR_T  wloc = (W - warrior == loc ? progCnt : *warrior[loc].taskHead);
@@ -2339,11 +2313,8 @@ warriorview(loc, outp)
   return (outp);
 }
 
-char
-       *
-pspaceview(loc, outp)
-  ADDR_T  loc;
-  char   *outp;
+char *
+pspaceview(ADDR_T loc, char *outp)
 {
   loc %= pSpaceSize;
   sprintf(outp, "[%4d]=%-5d\n", loc, loc ? *(pSpace[QW->pSpaceIndex] + loc) :
@@ -2353,8 +2324,7 @@ pspaceview(loc, outp)
 #endif
 
 int
-score(warnum)
-  int     warnum;
+score(int warnum)
 {
   int     surv, accu = 0;
   long    res;
@@ -2373,8 +2343,7 @@ score(warnum)
 /* total the number of deaths for warrior[warnum]; the "order of death"
    array is currently neither reported nor used for the score calculation */
 int
-deaths(warnum)
-  int     warnum;
+deaths(int warnum)
 {
   int     i, accu = 0;
   for (i = warriors; i < 2 * warriors - 1; ++i)
@@ -2383,8 +2352,7 @@ deaths(warnum)
 }
 
 void
-sort_by_score(idxV, scrV)
-  int    *idxV, *scrV;
+sort_by_score(int *idxV, int *scrV)
 {
   int     sorted, tmp, i;
   do {

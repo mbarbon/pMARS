@@ -38,10 +38,8 @@
 
 /* ********************************************************************** */
 
-char   *
-pstrchr(s, c)
-  char   *s;
-  int     c;
+char *
+pstrchr(char *s, int c)
 {
   do {
     if ((int) *s == c)
@@ -53,9 +51,8 @@ pstrchr(s, c)
 
 /* ********************************************************************** */
 
-char   *
-pstrdup(s)
-  char   *s;
+char *
+pstrdup(char *s)
 {
   char   *p, *q;
   register int i;
@@ -74,9 +71,8 @@ pstrdup(s)
 
 /* ********************************************************************** */
 
-char   *
-pstrcat(s1, s2)
-  char   *s1, *s2;
+char *
+pstrcat(char *s1, char *s2)
 {
   register char *p = s1;
 
@@ -93,9 +89,7 @@ pstrcat(s1, s2)
 
 /* return src of char in charset. charset is a string */
 uChar 
-ch_in_set(c, s)
-  uShrt   c;
-  char   *s;
+ch_in_set(uShrt c, char *s)
 {
   char    cc;
   register char a;
@@ -112,8 +106,7 @@ ch_in_set(c, s)
  * return src of str in charset. charset is a string set. case is significant
  */
 uChar 
-str_in_set(str, s)
-  char   *str, *s[];
+str_in_set(char *str, char *s[])
 {
   register uChar i;
   for (i = 0; *s[i] && strcmp(str, s[i]); i++);
@@ -124,9 +117,7 @@ str_in_set(str, s)
 
 /* return next char which is non-whitespace char */
 uChar 
-skip_space(str, i)
-  char   *str;
-  uShrt   i;
+skip_space(char *str, uShrt i)
 {
   register uChar idx;
   idx = (uChar) i;
@@ -137,9 +128,8 @@ skip_space(str, i)
 
 /* ********************************************************************** */
 
-void 
-to_upper(str)
-  char   *str;
+void
+to_upper(char *str)
 {
   while ((*str = toupper_(*str)) != '\0')
     str++;
@@ -148,10 +138,8 @@ to_upper(str)
 /* ********************************************************************** */
 
 /* Get token which depends on the first letter. token need to be allocated. */
-int 
-get_token(str, curIndex, token)
-  char   *str, *token;
-  uChar  *curIndex;
+int
+get_token(char *str, uChar *curIndex, char *token)
 {
   register uChar src, dst = 0;
   register int ch;                /* int for ctype compliance */

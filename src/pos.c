@@ -31,8 +31,7 @@ S32_T   rng(S32_T seed);
  * Communications of the ACM, 31:10 (1988)
  * returns 1 <= seed <= 2^31-2, cycle: 2^32, tested and approved */
 S32_T
-rng(seed)
-  S32_T   seed;
+rng(S32_T seed)
 {
   register S32_T temp = seed;
   temp = 16807 * (temp % 127773) - 2836 * (temp / 127773);
@@ -45,7 +44,7 @@ rng(seed)
                                  * position */
 #define RETRIES2 4                /* how many times to start backtracking */
 int
-posit()
+posit(void)
 {
   int     pos = 1, i, retries1 = RETRIES1, retries2 = RETRIES2;
   int     diff;
@@ -82,7 +81,7 @@ posit()
 }
 
 void
-npos()
+npos(void)
 {
   int     i, j;
   unsigned int temp;

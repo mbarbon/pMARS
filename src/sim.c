@@ -137,9 +137,9 @@ do { \
 
 #define OP(opcode,modifier) (opcode<<3)+modifier
 #define ADDMOD(A,B,C) do { if ((C=(int) A+B)>=coreSize) C-=coreSize; } \
-while (0)
+while(0)
 #define SUBMOD(A,B,C) do { if ((C=(int) A-B)<0) C+=coreSize; } \
-while (0)
+while(0)
 
 extern int posit(void);
 extern void npos(void);
@@ -209,7 +209,7 @@ checksum_warriors(void)
 }
 
 void
-simulator1()
+simulator1(void)
 {
 #ifdef PERMUTATE
   int permidx = 0, permtmp, *permbuf = NULL;

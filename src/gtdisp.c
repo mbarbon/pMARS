@@ -113,7 +113,7 @@ ScreenRetrieve(short *scrptr)
 #endif
 
 void
-text_display_init()
+text_display_init(void)
 {
   register int idx;
 #if defined(WATCOM)
@@ -160,7 +160,7 @@ text_display_init()
 }
 
 void
-text_display_clear()
+text_display_clear(void)
 {
   register int idx = 0;
   while (idx < screenSize)
@@ -183,7 +183,7 @@ text_display_clear()
              (((((W-warrior)+1) << 4) + 0x0F + 0x80) << 8)
 
 void
-text_display_close()
+text_display_close(void)
 {
   register short *ptr
   = Screen[CORE_PAGE] + (screenX >> 1) - 8 + (screenY >> 1) * screenX;

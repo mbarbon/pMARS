@@ -128,9 +128,7 @@ extern int xMaxOptions;
 static clp_opt_t xOpt;
 
 int
-xwin_decode(inputs, clip)
-  char   *inputs;
-  clp_opt_t **clip;
+xwin_decode(char *inputs, clp_opt_t **clip)
 {
   int     i;
 
@@ -156,8 +154,7 @@ xwin_decode(inputs, clip)
 /*******************************************************************/
 
 void
-print_usage(clopt)
-  clp_opt_t clopt[];
+print_usage(clp_opt_t clopt[])
 
 {
   clp_opt_t *clip;

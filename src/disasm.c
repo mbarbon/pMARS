@@ -83,10 +83,8 @@ cellview(cell, outp, emptyDisp)
 
 /* ******************************************************************** */
 
-char   *
-locview(loc, outp)
-  ADDR_T  loc;
-  char   *outp;
+char *
+locview(ADDR_T loc, char *outp)
 {
   char    buf[MAXALLCHAR];
   sprintf(outp, "%05d   %s\n", loc, cellview(memory + loc, buf, HIDE));
@@ -96,9 +94,7 @@ locview(loc, outp)
 /* ******************************************************************** */
 
 void
-disasm(cells, n, offset)
-  mem_struct *cells;
-  ADDR_T  n, offset;
+disasm(mem_struct *cells, ADDR_T n, ADDR_T offset)
 {
   ADDR_T  i;
   char    buf[MAXALLCHAR];

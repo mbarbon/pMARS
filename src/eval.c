@@ -96,10 +96,7 @@ char    saveOper = 0;
 
 /*--------------------*/
 long
-calc(x, y, op)
-  long    x;
-  long    y;
-  int     op;
+calc(long x, long y, int op)
 {
   long    z;
 
@@ -177,10 +174,8 @@ calc(x, y, op)
 }
 
 /*--------------------*/
-char   *
-getop(expr, oper)
-  char   *expr;
-  char   *oper;
+char *
+getop(char *expr, char *oper)
 {
   char    ch;
   switch (ch = *(expr++)) {
@@ -221,11 +216,8 @@ getop(expr, oper)
   return expr;
 }
 /*--------------------*/
-char   *
-getreg(expr, regId, val)
-  char   *expr;
-  int     regId;
-  long   *val;
+char *
+getreg(char *expr, int regId, long *val)
 {
   SKIP_SPACE(expr);
   if (*expr == '=' && *(expr + 1) != '=') {        /* assignment, not equality */
@@ -237,10 +229,8 @@ getreg(expr, regId, val)
 }
 
 /*--------------------*/
-char   *
-getval(expr, val)
-  char   *expr;
-  long   *val;
+char *
+getval(char *expr, long *val)
 {
   char    buffer[BIGNUM];
   int     regId;
@@ -337,7 +327,7 @@ eval(int prevPrec, long val1, char oper1, char *expr, long *result)
 
 /*--------------------*/
 void
-reset_regs()
+reset_regs(void)
 {
   register int idx;
 
@@ -348,18 +338,17 @@ reset_regs()
 /*--------------------*/
 
 void
-set_reg(regChr, val)
-  char    regChr;
-  long    val;
+set_reg(char regChr, long val)
 {
   regAr[regChr - 'A'] = val;
 }
 
 /*--------------------*/
 int
-eval_expr(expr, result)                /* wrapper for eval() */
-  char   *expr;
-  long   *result;
+eval_expr(                /* wrapper for eval() */
+    char *expr,
+    long *result
+)
 {
   evalerr = OK_EXPR;
   if (*eval(-1, 0L, IDENT, expr, result) != 0)
@@ -370,7 +359,7 @@ eval_expr(expr, result)                /* wrapper for eval() */
 #if STANDALONE
 /*--------------------*/
 void
-main()
+main(void)
 {                                /* test evaluator */
   char    expr[80];
   long    result;

@@ -61,7 +61,7 @@ extern char *xkey2macro(int, char *);
 
 void    grputs(char *);
 
-void 
+void
 grupdate(int newcurPanel)
 {
   if (curPanel == newcurPanel)
@@ -126,7 +126,7 @@ grupdate(int newcurPanel)
   curPanel = newcurPanel;
 }
 
-void 
+void
 graphio_init(void)
 {
   switch (graphdriver) {
@@ -151,7 +151,7 @@ graphio_init(void)
 
 
 void
-grclear()
+grclear(void)
 {
   posx = grwindx0;
   posy = grwindy0;

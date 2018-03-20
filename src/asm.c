@@ -242,8 +242,7 @@ static void expand(uShrt), encode(uShrt);
 /* ************************** Functions ***************************** */
 
 static ref_st *
-lookup(symn)
-  char   *symn;
+lookup(char *symn)
 {
   ref_st *curtbl;
   grp_st *symtable;
@@ -260,7 +259,7 @@ lookup(symn)
 /* ******************************************************************* */
 
 static void
-newtbl()
+newtbl(void)
 {
   ref_st *curtbl;
   if ((curtbl = (ref_st *) MALLOC(sizeof(ref_st))) != NULL) {
@@ -276,9 +275,7 @@ newtbl()
 /* ******************************************************************* */
 
 static grp_st *
-addsym(symn, curgroup)
-  char   *symn;
-  grp_st *curgroup;
+addsym(char *symn, grp_st *curgroup)
 {
   grp_st *symgrp;
 
@@ -297,9 +294,7 @@ addsym(symn, curgroup)
 /* ******************************************************************* */
 
 static void
-addpredef(symn, value)
-  char   *symn;
-  U32_T   value;
+addpredef(char *symn, U32_T value)
 {
   grp_st *lsymtbl = NULL;
   line_st *aline;
@@ -320,7 +315,7 @@ addpredef(symn, value)
 /* ******************************************************************* */
 
 static void
-addpredefs()
+addpredefs(void)
 {
   /* predefined constants */
   addpredef("CORESIZE", (U32_T) coreSize);
@@ -341,10 +336,7 @@ addpredefs()
 /* Add line, with sline and lline, it is possible to add line to multiple
    group of inst */
 static void
-addline(vline, src, lspnt)
-  char   *vline;
-  src_st *src;
-  uShrt   lspnt;
+addline(char *vline, src_st *src, uShrt lspnt)
 {
   line_st *temp;
   if ((temp = (line_st *) MALLOC(sizeof(line_st))) != NULL) {
@@ -367,9 +359,7 @@ addline(vline, src, lspnt)
 /* ******************************************************************* */
 
 static src_st *
-addlinesrc(src, loc)
-  char   *src;
-  uShrt   loc;
+addlinesrc(char *src, uShrt loc)
 {
   src_st *alinesrc;
 
@@ -388,8 +378,7 @@ addlinesrc(src, loc)
 /* ******************************************************************* */
 
 static void
-disposeline(aline)
-  line_st *aline;
+disposeline(line_st *aline)
 {
   line_st *tmp;
 
@@ -403,8 +392,7 @@ disposeline(aline)
 /* ******************************************************************* */
 
 static void
-disposegrp(agrp)
-  grp_st *agrp;
+disposegrp(grp_st *agrp)
 {
   grp_st *tmp;
 
@@ -418,8 +406,7 @@ disposegrp(agrp)
 /* ******************************************************************* */
 
 static void
-disposetbl(atbl, btbl)
-  ref_st *atbl, *btbl;
+disposetbl(ref_st *atbl, ref_st *btbl)
 {
   ref_st *tmp;
 
@@ -434,7 +421,7 @@ disposetbl(atbl, btbl)
 
 /* clear all allocated mem */
 static void
-cleanmem()
+cleanmem(void)
 {
   disposeline(sline[0]);
   disposeline(sline[1]);
@@ -450,7 +437,7 @@ cleanmem()
 
 /* show symbol informations */
 static void
-show_lbl()
+show_lbl(void)
 {
   ref_st *aref;
   grp_st *agrp;
@@ -502,8 +489,7 @@ show_lbl()
 
 /* Show information about the EQU processing */
 static void
-show_info(sspnt)
-  uShrt   sspnt;
+show_info(uShrt sspnt)
 {
   line_st *aline;
 
@@ -523,8 +509,7 @@ show_info(sspnt)
 
 /* Remove trailing comment from str */
 static void
-nocmnt(str)
-  char   *str;
+nocmnt(char *str)
 {
   while (*str && (*str != com_sym))
     str++;
@@ -534,9 +519,7 @@ nocmnt(str)
 /* ******************************************************************* */
 
 static int
-globalswitch(str, idx, loc, lspnt)
-  char   *str;
-  uShrt   idx, loc, lspnt;
+globalswitch(char *str, uShrt idx, uShrt loc, uShrt lspnt)
 {
   uChar   i;
   i = (uChar) idx;
@@ -585,10 +568,11 @@ globalswitch(str, idx, loc, lspnt)
 
 #ifndef SERVER
 static void
-lineswitch(str, idx, aline)        /* line switch */
-  char   *str;
-  uShrt   idx;
-  line_st *aline;
+lineswitch(        /* line switch */
+    char *str,
+    uShrt idx,
+    line_st *aline
+)
 {
   uChar   i;
   i = (uChar) idx;
@@ -627,8 +611,7 @@ lineswitch(str, idx, aline)        /* line switch */
 
 /* stst && wangsawm v0.4.0: output for different displays */
 static void
-textout(str)
-  char   *str;
+textout(char *str)
 {
 #ifdef MACGRAPHX
   macputs(str);
@@ -672,10 +655,7 @@ textout(str)
 /* ******************************************************************* */
 
 static void
-errprn(code, aline, arg)
-  errType code;
-  line_st *aline;
-  char   *arg;
+errprn(errType code, line_st *aline, char *arg)
 {
   char    abuf[MAXALLCHAR];
 
@@ -925,10 +905,7 @@ static line_st *aline;
 
 /* Here is the automaton */
 static void
-automaton(expr, state, cell)
-  char   *expr;
-  stateCol state;
-  mem_struct *cell;
+automaton(char *expr, stateCol state, mem_struct *cell)
 {
   uChar   idx = 0;
   char   *tmp;
@@ -1261,9 +1238,7 @@ automaton(expr, state, cell)
 /* ******************************************************************* */
 
 static void
-dfashell(expr, cell)
-  char   *expr;
-  mem_struct *cell;
+dfashell(char *expr, mem_struct *cell)
 {
   cell->A_mode = (FIELD_T) ch_in_set('$', addr_sym);
   cell->B_mode = (FIELD_T) ch_in_set('$', addr_sym);
@@ -1402,8 +1377,7 @@ dfashell(expr, cell)
 /* ******************************************************************* */
 
 static int
-normalize(value)
-  long    value;
+normalize(long value)
 {
   while (value >= (long) coreSize)
     value -= (long) coreSize;
@@ -1416,8 +1390,7 @@ normalize(value)
 /* assemble into instBank */
 
 static void
-encode(sspnt)
-  uShrt   sspnt;
+encode(uShrt sspnt)
 {
   int evalerrA, evalerrB;
   long    resultA, resultB;
@@ -1523,8 +1496,7 @@ encode(sspnt)
 /* ******************************************************************* */
 
 static int
-blkfor(expr, dest)
-  char   *expr, *dest;
+blkfor(char *expr, char *dest)
 {
   int evalerr;
   line_st *cline;
@@ -1610,8 +1582,7 @@ blkfor(expr, dest)
 /* ******************************************************************* */
 
 static int
-equtbl(expr)
-  char   *expr;
+equtbl(char *expr)
 {
   line_st *cline, *pline = NULL;
   uChar   i;
@@ -1666,10 +1637,7 @@ equtbl(expr)
 /* ******************************************************************* */
 
 static int
-equsub(expr, dest, wdecl, tbl)
-  char   *expr, *dest;
-  int     wdecl;
-  ref_st *tbl;
+equsub(char *expr, char *dest, int wdecl, ref_st *tbl)
 {
   line_st *cline;
 
@@ -1703,9 +1671,7 @@ equsub(expr, dest, wdecl, tbl)
 /* recursively traverse the buffer */
 /* buf[] has to be "" */
 static int
-trav2(buffer, dest, wdecl)
-  char   *buffer, *dest;
-  int     wdecl;
+trav2(char *buffer, char *dest, int wdecl)
 {
   int evalerr;
   uChar   idxp = 0;
@@ -1922,8 +1888,7 @@ trav2(buffer, dest, wdecl)
 
 /* collect and expand equ */
 static void
-expand(sspnt)
-  uShrt   sspnt;
+expand(uShrt sspnt)
 {
   dspnt = 1 - sspnt;
   disposeline(sline[dspnt]);
@@ -1954,10 +1919,7 @@ expand(sspnt)
 /* ******************************************************************* */
 
 int
-parse(expr, cell, loc)
-  char   *expr;
-  mem_struct *cell;
-  ADDR_T  loc;
+parse(char *expr, mem_struct *cell, ADDR_T loc)
 {
   int evalerrA, evalerrB;
   long    resultA, resultB;
@@ -2051,9 +2013,7 @@ parse(expr, cell, loc)
 static char stdinstart = 0;
 
 int
-assemble(fName, aWarrior)
-  char   *fName;
-  int     aWarrior;
+assemble(char *fName, int aWarrior)
 {
   FILE   *infp;
   uChar   cont = TRUE, conLine = FALSE, i;

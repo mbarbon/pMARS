@@ -119,8 +119,7 @@ is386:
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
     || defined(XWINGRAPHX)
 void
-decode_vopt(option)
-  int     option;
+decode_vopt(int option)
 {
 #if defined(XWINGRAPHX)
   extern int xDisplayType;        /* defined in xwindisp.c */
@@ -143,7 +142,7 @@ decode_vopt(option)
 #endif
 
 void
-init()
+init(void)
 {
   INITIALINST.opcode = (FIELD_T) DAT *8 + (FIELD_T) mF;
   INITIALINST.A_mode = INITIALINST.B_mode = (FIELD_T) DIRECT;
@@ -163,7 +162,7 @@ init()
 }
 
 void
-body()
+body(void)
 {
   int     i, j;
 
@@ -230,8 +229,7 @@ sighandler(dummy)
 
 
 void
-Exit(errorcode)
-  int     errorcode;
+Exit(int errorcode)
 {
 #if defined(CURSESGRAPHX)
   end_curses();                        /* Restore terminal to sane mode */
@@ -260,9 +258,7 @@ Exit(errorcode)
 }
 
 int
-main(argc, argv)
-  int     argc;
-  char  **argv;
+main(int argc, char **argv)
 {
 #if defined(unix) && !defined(DJGPP)
 #ifdef SIGINT
@@ -318,7 +314,7 @@ main(argc, argv)
 
 /* return exitcode based on SWITCH_Q setting, useful mainly in scripts */
 int
-returninfo()
+returninfo(void)
 {
 #ifdef GRAPHX
 #define VARIANT 2
@@ -369,7 +365,7 @@ returninfo()
 
 #ifdef PSPACE
 void
-pspace_init()
+pspace_init(void)
 {
   int     i, j;
   for (i = 0; i < warriors; ++i) {

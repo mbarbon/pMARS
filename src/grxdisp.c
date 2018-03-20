@@ -159,7 +159,7 @@ do {\
   } while(0)
 
 void
-bgi_clear_arena()
+bgi_clear_arena(void)
 {
   GrFilledBox(
               LEFT_UPPER_X - BORDER_WIDTH + 1,
@@ -169,7 +169,7 @@ bgi_clear_arena()
 }
 
 void
-bgi_display_clear()
+bgi_display_clear(void)
 {
   int     dummy;
   bgi_clear_arena();

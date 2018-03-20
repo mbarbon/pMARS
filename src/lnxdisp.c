@@ -186,9 +186,8 @@ static void     write_names(void);
 /*
  * adjust the position variables for a new panel
  */
-void 
-svga_update(newcurPanel)
-  int             newcurPanel;
+void
+svga_update(int newcurPanel)
 {
   if (curPanel == newcurPanel)
     return;
@@ -249,7 +248,7 @@ svga_update(newcurPanel)
 /*
  * initialize some graphics variables
  */
-static void 
+static void
 graphio_init(void)
 {
   verspace = 10;
@@ -260,9 +259,8 @@ graphio_init(void)
 /*
  * return the x coordinate of the given core address
  */
-int 
-xkoord(addr)
-  int             addr;
+int
+xkoord(int addr)
 {
   return (LEFT_UPPER_X + ((addr) % verticalSize) * (size + 1));
 }
@@ -270,9 +268,8 @@ xkoord(addr)
 /*
  * return the y coordinate of the given core address
  */
-int 
-ykoord(addr)
-  int             addr;
+int
+ykoord(int addr)
 {
   return (LEFT_UPPER_Y + ((addr) / verticalSize) * (size + 1));
 }
@@ -280,9 +277,8 @@ ykoord(addr)
 /*
  * record the coordinates and the color of the given core address
  */
-void 
-findplace(addr)
-  int             addr;
+void
+findplace(int addr)
 {
   x = xkoord(addr);
   y = ykoord(addr);
@@ -296,8 +292,8 @@ findplace(addr)
 /*
  * print a newline
  */
-static void 
-newline()
+static void
+newline(void)
 {
   posx = grwindx0;
   posy += verspace;
@@ -315,8 +311,8 @@ newline()
 /*
  * adjust the cursor after printing a new character
  */
-static void 
-newchar()
+static void
+newchar(void)
 {
   posx += horizspace;
   if (posx > grwindx1 - horizspace)
@@ -326,8 +322,8 @@ newchar()
 /*
  * delete a character by overwriting it with black
  */
-static void 
-delchar()
+static void
+delchar(void)
 {
   if (point) {
     cursoroff();
@@ -346,9 +342,8 @@ delchar()
 /*
  * draw the given text at the current address
  */
-void 
-svga_puts(sss)
-  char           *sss;
+void
+svga_puts(char *sss)
 {
   if (printAttr) {
     graphioColor = colors[printAttr - 1];
@@ -375,8 +370,8 @@ svga_puts(sss)
 /*
  * write the menu line
  */
-void 
-svga_write_menu()
+void
+svga_write_menu(void)
 {
   int             y, i, j;
   char            s[7];
@@ -428,8 +423,8 @@ svga_write_menu()
 /*
  * display the names of the warriors
  */
-void 
-write_names()
+void
+write_names(void)
 {
   if (warriors <= 2) {
     setcolor(colors[0]);
@@ -450,9 +445,8 @@ write_names()
  * redraw the mouse cursor (if show is false, hide it) at the new
  * location (newx/newy)
  */
-void 
-draw_mouse_cursor(show, newx, newy)
-  int             show, newx, newy;
+void
+draw_mouse_cursor(int show, int newx, int newy)
 {
   static int      state = 0;	/* currently showing ? */
   static int      xpos, ypos;	/* current mouse position */
@@ -480,11 +474,8 @@ draw_mouse_cursor(show, newx, newy)
  * a 'key' (eg. 'A' or F12	or PGUP) -- this is ugly code at its best
  * -- and I mean it ;-)
  */
-static int 
-conv_chr(buf, ndx, maxndx)
-  char           *buf;
-  int            *ndx;
-  int             maxndx;
+static int
+conv_chr(char *buf, int *ndx, int maxndx)
 {
   int             i = *ndx;
   int             ondx = *ndx;
@@ -599,8 +590,8 @@ conv_chr(buf, ndx, maxndx)
 /*
  * wait for a key and return its symbolic representation (eg. 'A', F12, ..)
  */
-int 
-svga_getch()
+int
+svga_getch(void)
 {
   int             x, max = 0;
   char            buffer[20];
@@ -628,8 +619,7 @@ svga_getch()
  * otherwise leave it unread. Return 0 if no key has been pressed.
  */
 static char 
-keypressed(read_flag)
-  int             read_flag;
+keypressed(int read_flag)
 {
   fd_set          set;
   struct timeval  timeout;
@@ -666,9 +656,8 @@ keypressed(read_flag)
  * check for mouse and key events, return 1 and set result if a mouse
  * button gets pressed, return 0 if a keyboard event occurs
  */
-static int 
-mouse_or_key(result)
-  char           *result;
+static int
+mouse_or_key(char *result)
 {
   int             x, y, mx, my, button;
   int             newLoc;
@@ -714,10 +703,8 @@ mouse_or_key(result)
 /*
  * handle 'special' keys (ie. function/control/alt keys)
  */
-static char    *
-special_keys(key, buf)
-  int             key;
-  char           *buf;
+static char *
+special_keys(int key, char *buf)
 {
   if (key < 32) {
     sprintf(buf, " m ctrl-%c\n", key + 96);
@@ -805,10 +792,8 @@ special_keys(key, buf)
 /*
  * read a line from the keyboard
  */
-char           *
-svga_gets(result, maxchar)
-  char           *result;
-  int             maxchar;
+char *
+svga_gets(char *result, int maxchar)
 {
   if (inputRedirection) {
     return fgets(result, maxchar, stdin);
@@ -870,9 +855,8 @@ svga_gets(result, maxchar)
 /*
  * draw a rectangle given the two opposite points
  */
-void 
-gl_rect(x, y, xx, yy, c)
-  int             x, y, xx, yy, c;
+void
+gl_rect(int x, int y, int xx, int yy, int c)
 {
   gl_hline(x, y, xx, c);
   gl_hline(x, yy, xx, c);
@@ -884,10 +868,8 @@ gl_rect(x, y, xx, yy, c)
  * draw specified text at location (x,y) - being the upper left corner
  * of the text
  */
-static void 
-svga_outtextxy(x, y, s)
-  int             x, y;
-  char           *s;
+static void
+svga_outtextxy(int x, int y, char *s)
 {
   if (curColor == BLACK) {
     gl_setfont(8, 8, blackFont);
@@ -907,8 +889,8 @@ svga_outtextxy(x, y, s)
  * clear the current panel by filling it with black and reset the
  * cursor position.
  */
-void 
-svga_clear()
+void
+svga_clear(void)
 {
   posx = grwindx0;
   posy = grwindy0;
@@ -920,8 +902,8 @@ svga_clear()
 /*
  * clear the arena
  */
-void 
-svga_clear_arena()
+void
+svga_clear_arena(void)
 {
   int             x = LEFT_UPPER_X - BORDER_WIDTH + 1;
   int             y = LEFT_UPPER_Y - BORDER_WIDTH + 1;
@@ -933,8 +915,8 @@ svga_clear_arena()
 /*
  * clear the arena and display the process meters and cycle meters
  */
-void 
-svga_display_clear()
+void
+svga_display_clear(void)
 {
   int             i;
 
@@ -952,8 +934,8 @@ svga_display_clear()
  * one more cycle has passed, update the display and check for keyboard
  * input
  */
-void 
-svga_display_cycle()
+void
+svga_display_cycle(void)
 {
   int             ch;
 
@@ -1031,9 +1013,8 @@ svga_display_cycle()
 /*
  * close the display
  */
-void 
-svga_display_close(wait)
-  int             wait;
+void
+svga_display_close(int wait)
 {
   if (wait == WAIT) {
     svga_puts(pressAnyKey);
@@ -1053,8 +1034,8 @@ svga_display_close(wait)
  * try to open the graphicmode, save the current terminal settings for
  * later restoration, initialize variables
  */
-void 
-svga_open_graphics()
+void
+svga_open_graphics(void)
 {
   int             i, gMode;
   int             xsize, ysize;

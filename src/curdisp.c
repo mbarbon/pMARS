@@ -136,7 +136,7 @@ do {\
 #define cur_display_close() text_display_close()
 
 void
-cur_display_cycle()
+cur_display_cycle(void)
 {
   if (displayLevel)
     if ((int) (W - warrior) % 2)
@@ -157,7 +157,7 @@ cur_display_cycle()
 
 /* Initialize curses windows */
 void
-init_curses()
+init_curses(void)
 {
   initscr();
 
@@ -179,9 +179,8 @@ init_curses()
 
 /* create a new window for specified page.
    All pages except CORE_PAGE are in non-interactive mode. */
-win_t  *
-createwindow(lines, cols, y, x, page)
-  int     lines, cols, y, x, page;
+win_t *
+createwindow(int lines, int cols, int y, int x, int page)
 {
   win_t  *awin;
 
@@ -201,7 +200,7 @@ createwindow(lines, cols, y, x, page)
 }
 
 int
-newpg()
+newpg(void)
 {
   int     pg = 0;
   win_t  *awin;
@@ -227,7 +226,7 @@ newpg()
 }
 
 void
-cur_display_init()
+cur_display_init(void)
 {
   int     idx, statuslines, corelines;
 
@@ -267,8 +266,7 @@ cur_display_init()
 }
 
 void
-update_statusline(round)
-  int     round;
+update_statusline(int round)
 {
   switch (warriors) {
   case 1:
@@ -288,8 +286,7 @@ update_statusline(round)
 }
 
 void
-switch_page(page)
-  int     page;
+switch_page(int page)
 {
   win_t  *win;
 
@@ -315,8 +312,7 @@ switch_page(page)
 }
 
 void
-closewin(page)
-  int     page;
+closewin(int page)
 {
   win_t  *w, *p;
   for (p = NULL, w = globalwin; w; p = w, w = w->nextwin)
@@ -341,8 +337,7 @@ closewin(page)
  winUp(lines, cols, (LINES-(lines))/2, (COLS-(cols))/2, page)
 
 void
-text_panel_update(newpanel)
-  int     newpanel;
+text_panel_update(int newpanel)
 {
   if (curPanel == newpanel)
     return;
@@ -369,16 +364,14 @@ text_panel_update(newpanel)
 }
 
 void
-clear_page5()
+clear_page5(void)
 {
   wclear(curwin);
   wrefresh(curwin);
 }
 
 void
-aputs5(str, attr)
-  char   *str;
-  int     attr;
+aputs5(char *str, int attr)
 {
   int     y, x;
 
@@ -395,11 +388,8 @@ aputs5(str, attr)
    */
 }
 
-char   *
-agets5(str, maxchar, attr)
-  char   *str;
-  int     attr;
-  int     maxchar;
+char *
+agets5(char *str, int maxchar, int attr)
 {
   if (inputRedirection) {
     return fgets(str, maxchar, stdin);
@@ -517,7 +507,7 @@ agets5(str, maxchar, attr)
 
 /* must only be called from cdb() */
 void
-text_display_clear()
+text_display_clear(void)
 {                                /* clear screen at CORE_PAGE */
   register int idx;
 
@@ -528,7 +518,7 @@ text_display_clear()
 }
 
 void
-text_display_close()
+text_display_close(void)
 {
   if (displayLevel) {
     update_statusline(round - 1);
@@ -550,9 +540,7 @@ text_display_close()
  */
 
 void
-escape(s, p, errCode)
-  char   *s, *p;
-  int     errCode;
+escape(char *s, char *p, int errCode)
 {
   clear();
   refresh();
@@ -571,7 +559,7 @@ escape(s, p, errCode)
 }
 
 void
-end_curses()
+end_curses(void)
 {
   if (curwin) {
     while (globalwin)
@@ -581,14 +569,13 @@ end_curses()
 }
 
 void
-winupdate()
+winupdate(void)
 {
   wrefresh(curwin);
 }
 
 void
-SetCursor(x, y)
-  int     x, y;
+SetCursor(int x, int y)
 {
   wmove(curwin, y, x);
 }
