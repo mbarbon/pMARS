@@ -1332,7 +1332,7 @@ cdb_fputs(char *str, int wout)
 #endif
 #endif
 
-  if ((!silent) || (wout == FORCE))
+  if ((!silent) || (wout == FORCE)) {
 #if defined(DOSALLGRAPHX)
     if (displayMode == TEXT) {
       if (printAttr)
@@ -1341,29 +1341,24 @@ cdb_fputs(char *str, int wout)
         aputs5(str, NORMAL_ATTR);
     } else
       grputs(str);
-  printAttr = 0;
 #else
 #if defined(DOSTXTGRAPHX)
     if (printAttr)
       aputs5(str, printAttr << 12);
     else
       aputs5(str, NORMAL_ATTR);
-  printAttr = 0;
 #else
 #if defined(DOSGRXGRAPHX)
     grputs(str);
-  printAttr = 0;
 #else
 #if defined(MACGRAPHX)
     macputs(str);
 #else
 #if defined(LINUXGRAPHX)
     svga_puts(str);
-  printAttr = 0;
 #else
 #if defined(XWINGRAPHX)
     xWin_puts(str);
-  printAttr = 0;
 #else
     fputs(str, STDOUT);
 #endif
@@ -1371,6 +1366,11 @@ cdb_fputs(char *str, int wout)
 #endif
 #endif
 #endif
+#endif
+  }
+#if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
+    || defined(XWINGRAPHX)
+  printAttr = 0;
 #endif
 }
 /*---------------------------------------------------------------------------

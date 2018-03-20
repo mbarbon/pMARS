@@ -138,7 +138,7 @@ do {\
 void
 cur_display_cycle(void)
 {
-  if (displayLevel)
+  if (displayLevel) {
     if ((int) (W - warrior) % 2)
       wstandout(corewin);
     else {
@@ -149,6 +149,7 @@ cur_display_cycle(void)
         wrefresh(corewin);
       }
     }
+  }
 #if defined(SYSV) && defined(KEYPRESS)                         /* PAK */
   if (wgetch(corewin) != ERR)
     debugState = STEP;
