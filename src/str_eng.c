@@ -1,6 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
- * Copyright (C) 2000 Philip Kendall
+ * Copyright (C) 2000 Philip Kendall and Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 /*
  * str_eng.c: externalized messages for easy translation (ENGLISH version)
- * $Id: str_eng.c,v 1.4 2000/09/28 11:03:54 anton Exp $
+ * $Id: str_eng.c,v 1.5 2000/12/25 00:49:08 iltzu Exp $
  */
 
 #include "global.h"
@@ -273,7 +273,9 @@ char   *discardLabelErr = "Discarding these labels: '%s'";
 char   *tooManyInstrErr = "Too many instructions (about %s more)";
 char   *missingErr = "Missing '%s'";
 char   *recursiveErr = "Recursive reference of label '%s'";
-char   *badExprErr = "Bad expression or division by zero";
+char   *badExprErr = "Bad expression";
+char   *divZeroErr = "Division by zero";
+char   *overflowErr = "Arithmetic overflow detected";
 char   *missingAssertErr = "Missing ';assert'. Warrior may not work with the current setting";
 char   *concatErr = "Unable to derefer and concatenate symbol '%s'";
 char   *ignoreENDErr = "Both opcodes ORG and END are used. Ignoring END";
@@ -412,6 +414,9 @@ char   *optDIAOutput = "Generate DIA diagnostics";
 #ifdef PSPACE
 char   *optPSpaceSize = "Size of P-space [1/16th core]";
 #endif
+#ifdef PERMUTATE
+char   *optPermutate = "Permutate starting positions";
+#endif
 #if defined(XWINGRAPHX)
 char   *optXOpt[] = {
   "Display to connect to",
@@ -424,10 +429,12 @@ char   *fFExclusive = "\nOnly one of -f and -F can be given\n";
 char   *coreSizeTooSmall = "\nCore size is too small\n";
 char   *dLessThanl = "\nWarrior distance cannot be smaller than warrior length\n";
 char   *FLessThand = "\nPosition of warrior #2 cannot be smaller than warrior distance\n";
-char   *FTooBig = "\nPosition of warrior #2 is too big\n";
 char   *badScoreFormula = "\nBad score formula\n";
 #ifdef PSPACE
 char   *pSpaceTooBig = "\nP-space is bigger than core\n";
+#endif
+#ifdef PERMUTATE
+char   *permutateMultiWarrior = "\nPermutation cannot be used in multiwarrior battles\n";
 #endif
 /* These strings are used by the VMS Language Sensitive Editor */
 #ifdef VMS

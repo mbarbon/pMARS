@@ -352,4 +352,4 @@ Parsing is done in three steps:
   been substituted are substituted. Syntax checking to meet with '88 or '94
   requirement is done in this stage.
 
-$Id: redcode.ref,v 1.1 2000/08/18 14:35:37 anton Exp $
+$Id: redcode.ref,v 1.1.1.1 2000/08/18 14:35:37 iltzu Exp $

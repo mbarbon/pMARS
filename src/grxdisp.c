@@ -18,7 +18,7 @@
 
 /*
  * grxdisp.c: DOS graphics mode (DJGPP/GRX) display
- * $Id: grxdisp.c,v 1.2 2000/08/20 13:29:36 anton Exp $
+ * $Id: grxdisp.c,v 1.1.1.1 2000/08/20 13:29:36 iltzu Exp $
  *
  * graphics coreviewer should work on any display supported by go32
  * include this file into sim.c to replace the DISPLAY_? macros */

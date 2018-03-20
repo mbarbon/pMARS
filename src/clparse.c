@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * clparse.c: command line parser
- * $Id: clparse.c,v 1.2 2000/08/20 13:29:29 anton Exp $
+ * $Id: clparse.c,v 1.5 2000/12/25 00:49:08 iltzu Exp $
  */
 
 /*******************************************************************
@@ -69,8 +70,9 @@ extern char *credits_screen1, *credits_screen2, *credits_screen3, *usage_screen,
        *optCoreSize, *optBrief, *optCycles, *optVerboseAssembly, *optProcesses,
        *optKotH, *optLength, *opt88, *optDistance, *optFixedSeries, *optFixedPosition,
        *optSort, *optView, *optScoreFormula, *optDIAOutput, *noWarriorFile,
-       *fFExclusive, *coreSizeTooSmall, *dLessThanl, *FLessThand, *FTooBig,
-       *outOfMemory, *badScoreFormula, *optPSpaceSize, *pSpaceTooBig;
+       *fFExclusive, *coreSizeTooSmall, *dLessThanl, *FLessThand,
+       *outOfMemory, *badScoreFormula, *optPSpaceSize, *pSpaceTooBig,
+       *optPermutate, *permutateMultiWarrior;
 
 #if defined(XWINGRAPHX)
 extern char *badArgumentForXSwitch, *optXOpt[];
@@ -459,13 +461,18 @@ parse_param(largc, largv)
   * command line parameters and options                              *
   ********************************************************************/
 
-#define OPTNUM 20                /* don't forget to increase when adding new
+#define OPTNUM 21                /* don't forget to increase when adding new
                                  * options */
   static clp_opt_t options[OPTNUM];
   int     optI = 0;                /* used by record() macro */
 
+#ifdef PERMUTATE
+  record('r', clp_int, &rounds, 0, MAXROUND,
+         -1, optRounds);
+#else
   record('r', clp_int, &rounds, 0, MAXROUND,
          DEFAULTROUNDS, optRounds);
+#endif
 #ifndef SERVER
   record('e', clp_bool, &SWITCH_e, 0, 1,
          0, optEnterDebugger);
@@ -499,6 +506,10 @@ parse_param(largc, largv)
 #if defined(PSPACE)
   record('S', clp_addr, &pSpaceSize, 1,
          MAXCORESIZE, 0, optPSpaceSize);
+#endif
+#ifdef PERMUTATE
+  record('P', clp_bool, &SWITCH_P, 0, 1,
+	 0, optPermutate);
 #endif
   record('=', clp_str, &SWITCH_eq, 0, 0, 0, optScoreFormula);
   record('Q', clp_int, &SWITCH_Q, -1, INT_MAX, -1, NULL);
@@ -552,11 +563,6 @@ parse_param(largc, largv)
         errout(fFExclusive);
         result = CLP_NOGOOD;
       }
-      if (coreSize < (warriors * separation / 2)) {
-        print_usage(options);
-        errout(coreSizeTooSmall);
-        result = CLP_NOGOOD;
-      }
       if (separation == 0)
         separation = instrLim;
       else if (separation < instrLim) {
@@ -564,20 +570,20 @@ parse_param(largc, largv)
         errout(dLessThanl);
         result = CLP_NOGOOD;
       }
+      if (coreSize < (warriors * separation)) {
+        print_usage(options);
+        errout(coreSizeTooSmall);
+        result = CLP_NOGOOD;
+      }
       if ((SWITCH_F) && (separation > SWITCH_F)) {
         print_usage(options);
         errout(FLessThand);
         result = CLP_NOGOOD;
       }
-      if ((SWITCH_F) && ((coreSize - separation) < SWITCH_F)) {
-        print_usage(options);
-        errout(FTooBig);
-        result = CLP_NOGOOD;
-      }
       set_reg('W', (long) warriors);
       for (i = 1; i <= warriors; ++i) {
         set_reg('S', (long) i);
-        if (eval_expr(SWITCH_eq, &dummy) != OK_EXPR) {
+        if (eval_expr(SWITCH_eq, &dummy) < OK_EXPR) {
           print_usage(options);
           errout(badScoreFormula);
           result = CLP_NOGOOD;
@@ -590,11 +596,23 @@ parse_param(largc, largv)
           if (!(coreSize % i)) {
             pSpaceSize = coreSize / i;
             break;
-          } else if (pSpaceSize > coreSize) {
-            print_usage(options);
-            errout(pSpaceTooBig);
-            result = CLP_NOGOOD;
           }
+      if (pSpaceSize > coreSize) {
+	print_usage(options);
+	errout(pSpaceTooBig);
+	result = CLP_NOGOOD;
+      }
+#endif
+#ifdef PERMUTATE
+      if (SWITCH_P) {
+	if (warriors != 2) {
+	  print_usage(options);
+	  errout(permutateMultiWarrior);
+	  result = CLP_NOGOOD;
+	} else if (rounds < 0) /* all possible combinations */
+	    rounds = 2*coreSize-4*separation+2;
+      } else if (rounds < 0 )
+	rounds = DEFAULTROUNDS;
 #endif
       /* further checks of the values */
 
@@ -609,3 +627,6 @@ parse_param(largc, largv)
   }
   return result;
 }
+
+
+

@@ -18,7 +18,7 @@
 
 /*
  * asm.h: header for asm.c
- * $Id: asm.h,v 1.2 2000/08/20 13:29:27 anton Exp $
+ * $Id: asm.h,v 1.1.1.1 2000/08/20 13:29:27 iltzu Exp $
  */
 
 #define NONE      0

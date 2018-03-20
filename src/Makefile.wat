@@ -5,15 +5,16 @@
 # Configuration options:
 #
 # No.   Name            Incompatible with   Description
-# (1)   -DSERVER        2                   disables cdb debugger (koth server 
+# (1)   /DSERVER        2                   disables cdb debugger (koth server 
 #                                           version)
-# (2)   -DGRAPHX        1                   enables platform specific core 
+# (2)   /DGRAPHX        1                   enables platform specific core 
 #                                           graphics
-# (3)   -DEXT94                             ICWS'94 + SEQ,SNE,NOP,*,{,}
-# (4)   -DSMALLMEM                          16-bit addresses, less memory
+# (3)   /DEXT94                             ICWS'94 + SEQ,SNE,NOP,*,{,}
+# (4)   /DSMALLMEM                          16-bit addresses, less memory
+# (5)   /DPERMUTATE                         enables -P switch
 
 CC = wcc386
-CFLAGS  = /mf /wx /s /oneatx /DWATCOM /DEXT94 /DGRAPHX /DDOSTXTGRAPHX
+CFLAGS  = /mf /wx /s /oneatx /DWATCOM /DEXT94 /DGRAPHX /DDOSTXTGRAPHX /DPERMUTATE
 
 OBJS = pmars.obj asm.obj eval.obj disasm.obj cdb.obj pos.obj &
        clparse.obj global.obj token.obj str_eng.obj sim.obj

@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * cdb.c: debugger
- * $Id: cdb.c,v 1.2 2000/08/20 13:29:28 anton Exp $
+ * $Id: cdb.c,v 1.3 2000/12/25 00:49:07 iltzu Exp $
  *
  * cdb - line-oriented core debugger by Stefan Strack
  */
@@ -298,7 +299,7 @@ extern char *pagePrompt, *exitingCdbToFinishSimulation, *usageDisplay, *usageExe
        *warriorAtAddressHasActiveProcesses, *pluralEndingOfProcess, *ofWarriorsAreAlive,
        *fillWith, *dotByItselfEndsKeyboardInput, *cannotOpenMacroFile,
        *maximumNumberOfMacrosExceeded, *outOfMacroMemory, *unknownMacro,
-       *badExprErr;
+       *badExprErr, *divZeroErr, *overflowErr;
 
 /* global variables */
 static FILE *logfile = 0;
@@ -1501,6 +1502,7 @@ subst_eval(inpStr, result)
   char   *inpStr;
   long   *result;
 {
+  int evalerr;
   char    buf[2][MAXARG + 1], outs2[MAXARG + 1], *pos;
   int     bi1 = 0, bi2 = 1, tmp, i;
 #define SWITCHBI do {bi1 = !bi1; bi2 = !bi2;} while(0)
@@ -1601,10 +1603,15 @@ subst_eval(inpStr, result)
     substitute(buf[bi1], "LINES", outs, buf[bi2]);
 
   }                                /* if (*pos) */
-  if (eval_expr(buf[bi2], result) == OK_EXPR)
+  if ((evalerr = eval_expr(buf[bi2], result)) >= OK_EXPR) {
+    if (evalerr == OVERFLOW) {
+      cdb_fputs(overflowErr, COND);
+      cdb_fputs("\n", COND);
+    }
     return RANGE_T;
-  else
+  } else {
     return TEXT_T;                /* this is somewhat poorly handled */
+  }
 }
 /*---------------------------------------------------------------------------
  parse_cmd - into verb,range,argument string
@@ -1996,6 +2003,7 @@ void
 edit_core(start, stop)
   ADDR_T  start, stop;
 {
+  int evalerr;
   long    result;
   long    sstart, sstop;
 
@@ -2020,10 +2028,17 @@ edit_core(start, stop)
 
     if (!TERMINAL(xInpP)) {
       if (targetID == PSP) {        /* edit P-cell */
-        if (eval_expr(xInpP, &result) != OK_EXPR) {
-          cdb_fputs(badExprErr, FORCE);
+        if ((evalerr = eval_expr(xInpP, &result)) < OK_EXPR) {
+          if (evalerr == DIV_ZERO)
+            cdb_fputs(divZeroErr, FORCE);
+          else
+            cdb_fputs(badExprErr, FORCE);
           cdb_fputs("\n", FORCE);
           return;
+        }
+        if (evalerr == OVERFLOW) {
+          cdb_fputs(overflowErr, COND);
+          cdb_fputs("\n", COND);
         }
         result = ((ADDR_T) (((result) % (long) coreSize) + coreSize) % coreSize);
         if (start)
@@ -2051,6 +2066,7 @@ void
 fill_core(start, stop)
   ADDR_T  start, stop;
 {
+  int evalerr;
   long    sstart, sstop;
   int     result;
   long    evalres;
@@ -2062,10 +2078,17 @@ fill_core(start, stop)
   xInpP = get_cmd("");
   SKIP_SPACE(xInpP);
   if (targetID == PSP) {
-    if (eval_expr(xInpP, &evalres) != OK_EXPR) {
-      cdb_fputs(badExprErr, FORCE);
+    if ((evalerr = eval_expr(xInpP, &evalres)) < OK_EXPR) {
+      if (evalerr == DIV_ZERO)
+        cdb_fputs(divZeroErr, FORCE);
+      else
+        cdb_fputs(badExprErr, FORCE);
       cdb_fputs("\n", FORCE);
       return;
+    }
+    if (evalerr == OVERFLOW) {
+      cdb_fputs(overflowErr, COND);
+      cdb_fputs("\n", COND);
     }
     evalres = ((ADDR_T) (((evalres) % (long) coreSize) + coreSize) % coreSize);
   }
@@ -2397,7 +2420,7 @@ score(warnum)
 
   for (surv = 1; surv <= warriors; ++surv) {
     set_reg('S', (long) surv);
-    if (eval_expr(SWITCH_eq, &res) != OK_EXPR)
+    if (eval_expr(SWITCH_eq, &res) < OK_EXPR)
       return INT_MIN;                /* hopefully clparse will catch errors
                                  * earlier */
     else

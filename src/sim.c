@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * sim.c: simulator
- * $Id: sim.c,v 1.3 2000/10/23 04:43:50 anton Exp $
+ * $Id: sim.c,v 1.3 2000/12/25 00:49:08 iltzu Exp $
  *
  * 10-23-98 Pentium optimized version 30% faster than the original
  *          Ken Espiritu
@@ -222,7 +223,9 @@ checksum_warriors()
 void
 simulator1()
 {
-
+#ifdef PERMUTATE
+  int permidx = 0, permtmp, *permbuf = NULL;
+#endif
   /* range for random number generator */
   warrior_struct *oldW;                /* the previous living warrior to execute */
   ADDR_T  positions = coreSize + 1 - (separation << 1);
@@ -246,6 +249,16 @@ register  int     temp;                        /* general purpose temporary vari
 #endif
 
   endWar = warrior + warriors;
+
+#ifdef PERMUTATE
+  if (SWITCH_P) {
+    permbuf = (int *) malloc((size_t)(warriors * positions * sizeof(int)));
+    if (!permbuf) {
+      errout(outOfMemory);
+      Exit(MEMERR);
+    }
+  }
+#endif
 
 #ifdef DOS16
   if (!alloc_p) {
@@ -292,6 +305,10 @@ register  int     temp;                        /* general purpose temporary vari
     (SWITCH_F - separation) :        /* seed from argument */
   /* seed from either checksum or time */
     rng(SWITCH_f ? checksum_warriors() : time(0));
+#ifdef PERMUTATE
+  if (SWITCH_F && SWITCH_P)
+    seed *= warriors; /* get table index from position */
+#endif
 
   display_init();
   round = 1;
@@ -308,7 +325,19 @@ register  int     temp;                        /* general purpose temporary vari
     cycle = cycles2;
     if (warriors > 1) {
       if (warriors == 2) {
-	warrior[1].position = separation + seed % positions;
+#ifdef PERMUTATE
+        if (SWITCH_P) {
+          if (permidx == 0) { /* initialize buffer */
+            for (;permidx < warriors*positions; permidx++)
+              permbuf[permidx] = permidx;
+          }
+          permtmp = seed % permidx;
+          warrior[1].position = separation + permbuf[permtmp]/warriors;
+          starter = warrior + permbuf[permtmp] % warriors;
+          permbuf[permtmp] = permbuf[--permidx];
+        } else
+#endif
+	  warrior[1].position = separation + seed % positions;
 	seed = rng(seed);
       } else {
 	if (posit())
@@ -577,6 +606,15 @@ if (IR.B_mode != (FIELD_T) IMMEDIATE)
 	display_write(addrB);
 	break;
 
+#ifdef PERMUTATE
+  if (SWITCH_P) {
+    permbuf = (int *) malloc((size_t)(warriors * positions * sizeof(int)));
+    if (!permbuf) {
+      errout(outOfMemory);
+      Exit(MEMERR);
+    }
+  }
+#endif
 
       case OP(ADD, mA):
 	display_read(addrA);
@@ -1240,6 +1278,12 @@ if (IR.B_mode != (FIELD_T) IMMEDIATE)
 #if 0
       default:
 	errout(fatalErrorInSimulator);
+#ifdef PERMUTATE
+        if(permbuf) {
+          free(permbuf);
+          permbuf = NULL;
+        }
+#endif
 #ifndef DOS16
 	/* DOS taskQueue may not be free'd because of segment wrap-around */
 	free(memory);
@@ -1290,6 +1334,12 @@ nextround:
   } while (++round <= rounds);
 
   display_close();
+#ifdef PERMUTATE
+  if(permbuf) {
+    free(permbuf);
+    permbuf = NULL;
+  }
+#endif
 #ifndef DOS16
   /* DOS taskQueue may not be free'd because of segment wrap-around */
   free(memory);

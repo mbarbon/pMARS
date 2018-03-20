@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * asm.c: assembler
- * $Id: asm.c,v 1.2 2000/08/20 13:29:26 anton Exp $
+ * $Id: asm.c,v 1.3 2000/12/25 00:49:07 iltzu Exp $
  *
  *    usage: int assemble(char *filename, FIELD_T warriornum);
  *     parameters:
@@ -66,7 +67,7 @@ extern char *logicErr, *reference, *labelRefMsg, *groupLabel, *textMsg,
        *assertionFailErr, *tooManyMsgErr, *fileOpenErr, *fileReadErr, *notEnoughMemErr,
        *warning, *error, *inLine, *opcodeMsg, *modifierMsg, *aTerm, *bTerm,
        *currentAssertMsg, *currentFORMsg, *CURLINEErr, *paramCheckMsg,
-       *errNumMsg, *warNumMsg, *duplicateMsg;
+       *errNumMsg, *warNumMsg, *duplicateMsg, *divZeroErr, *overflowErr;
 
 #ifdef VMS                        /* VMS LSE strings ( "-D" option) */
 extern char *StartDia, *Region, *AllLine, *LineQualifier, *Label, *LSEWarn,
@@ -89,7 +90,8 @@ typedef enum errType {
   EVLERR, EXPERR, RECERR, ANNERR, LINERR, APPERR, IGNORE,
   ZLNERR, NUMERR, IDNERR, ROFERR, FORERR, ERVERR, GRPERR,
   CHKERR, NASERR, BASERR, EXXERR, FNFERR, UDFERR, CATERR,
-  DLBERR, OFSERR, DOEERR, DSKERR, MLCERR, MISC
+  DLBERR, OFSERR, DOEERR, DSKERR, MLCERR, DIVERR, OFLERR,
+  MISC
 }       errType;
 
 typedef enum stateCol {
@@ -753,6 +755,13 @@ errprn(code, aline, arg)
     break;
   case EVLERR:
     strcpy(abuf, badExprErr);
+    break;
+  case DIVERR:
+    strcpy(abuf, divZeroErr);
+    break;
+  case OFLERR:
+    strcpy(abuf, overflowErr);
+    errorlevel = WARNING;
     break;
   case NASERR:
     strcpy(abuf, missingAssertErr);
@@ -1428,6 +1437,7 @@ static void
 encode(sspnt)
   uShrt   sspnt;
 {
+  int evalerrA, evalerrB;
   long    resultA, resultB;
   mem_struct *base;
 
@@ -1455,9 +1465,15 @@ encode(sspnt)
                 || (opcode == PINOP)
 #endif
               )
-              if (eval_expr(B_expr, &resultB))
-                errprn(EVLERR, aline, "");
-              else {                /* by absolute */
+              if ((evalerrA = eval_expr(B_expr, &resultB)) < OK_EXPR) {
+                if (evalerrA == DIV_ZERO)
+                  errprn(DIVERR, aline, "");
+                else
+                  errprn(EVLERR, aline, "");
+              } else {                /* by absolute */
+                if (evalerrA == OVERFLOW)
+                  errprn(OFLERR, aline, "");
+
                 if ((opcode == ORGOP || opcode == PINOP) && SWITCH_8)
                   errprn(M88ERR, aline, opname[opcode]);
 
@@ -1478,9 +1494,19 @@ encode(sspnt)
                     warrior[curWarrior].offset = normalize(resultB);
                 /* else ignore 'end' with parameter == 0L */
               }
-            else if (eval_expr(A_expr, &resultA) || eval_expr(B_expr, &resultB))
-              errprn(EVLERR, aline, "");
-            else {
+            else if ((evalerrA = eval_expr(A_expr, &resultA)) < OK_EXPR) {
+              if (evalerrA == DIV_ZERO)
+                errprn(DIVERR, aline, "");
+              else
+                errprn(EVLERR, aline, "");
+            } else if ((evalerrB = eval_expr(B_expr, &resultB)) < OK_EXPR) {
+              if (evalerrB == DIV_ZERO)
+                errprn(DIVERR, aline, "");
+              else
+                errprn(EVLERR, aline, "");
+            } else {
+              if (evalerrA == OVERFLOW || evalerrB == OVERFLOW)
+                errprn(OFLERR, aline, "");
               base[line].A_value = (ADDR_T) normalize(resultA);
               base[line].B_value = (ADDR_T) normalize(resultB);
               if ((base[line++].debuginfo = (FIELD_T) aline->dbginfo) != 0)
@@ -1516,6 +1542,7 @@ static int
 blkfor(expr, dest)
   char   *expr, *dest;
 {
+  int evalerr;
   line_st *cline;
   long    result;
   ref_st *atbl, *ptbl;
@@ -1541,11 +1568,18 @@ blkfor(expr, dest)
     sprintf(outs, currentFORMsg, dest);
     textout(outs);
   }
-  if (eval_expr(dest, &result))
-    errprn(EVLERR, aline, "");
-  else if (result <= 0L)
+  if ((evalerr = eval_expr(dest, &result)) < OK_EXPR) {
+    if (evalerr == DIV_ZERO)
+      errprn(DIVERR, aline, "");
+    else
+      errprn(EVLERR, aline, "");
+  } else if (result <= 0L) {
+    if (evalerr == OVERFLOW)
+      errprn(OFLERR, aline, "");
     statefine++;
-  else {
+  } else {
+    if (evalerr == OVERFLOW)
+      errprn(OFLERR, aline, "");
 
     newtbl();
     reftbl->reftype = RSTACK;
@@ -1689,6 +1723,7 @@ trav2(buffer, dest, wdecl)
   char   *buffer, *dest;
   int     wdecl;
 {
+  int evalerr;
   uChar   idxp = 0;
   ref_st *tbl;
 
@@ -1714,9 +1749,11 @@ trav2(buffer, dest, wdecl)
           sprintf(outs, currentAssertMsg, dest);
           textout(outs);
         }
-        if (eval_expr(dest, &result))
+        if ((evalerr = eval_expr(dest, &result)) < OK_EXPR)
           errprn(BASERR, aline, "");
         else {
+          if (evalerr == OVERFLOW)
+            errprn(OFLERR, aline, "");
           noassert = FALSE;
           if (result == 0L)
             errprn(CHKERR, aline, "");
@@ -1938,6 +1975,7 @@ parse(expr, cell, loc)
   mem_struct *cell;
   ADDR_T  loc;
 {
+  int evalerrA, evalerrB;
   long    resultA, resultB;
   mem_struct tmp;
   ADDR_T  dloc;
@@ -1971,9 +2009,19 @@ parse(expr, cell, loc)
     dfashell(aline->vline, &tmp);
     if (errnum == 0)
       if (opcode < OPNUM)
-        if (eval_expr(A_expr, &resultA) || eval_expr(B_expr, &resultB))
-          errprn(EVLERR, aline, "");
-        else {
+        if ((evalerrA = eval_expr(A_expr, &resultA)) < OK_EXPR) {
+          if (evalerrA == DIV_ZERO)
+            errprn(DIVERR, aline, "");
+          else
+            errprn(EVLERR, aline, "");
+        } else if ((evalerrB = eval_expr(B_expr, &resultB)) < OK_EXPR) {
+          if (evalerrB == DIV_ZERO)
+            errprn(DIVERR, aline, "");
+          else
+            errprn(EVLERR, aline, "");
+        } else {
+          if (evalerrA == OVERFLOW || evalerrB == OVERFLOW)
+            errprn(OFLERR, aline, "");
           cell->opcode = tmp.opcode;
           cell->A_mode = tmp.A_mode;
           cell->B_mode = tmp.B_mode;

@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * global.h: global header
- * $Id: global.h,v 1.3 2000/08/31 10:28:53 anton Exp $
+ * $Id: global.h,v 1.5 2000/12/25 00:56:41 iltzu Exp $
  *
  * 10-23-98 Pentium optimized version 30% faster than the original
  *          Ken Espiritu   (kespirit@cesun1.ce.vt.edu)
@@ -126,8 +127,8 @@ enum {
 
 /* Version and date */
 
-#define PMARSVER  90
-#define PMARSDATE "31/08/00"
+#define PMARSVER  92
+#define PMARSDATE "25/12/00"
 
 #ifdef VMS                        /* Must change codes to work with VMS error
                                  * handling */
@@ -162,6 +163,7 @@ extern  PMARS_FATAL, PMARS_BADCOMLIN, PMARS_PARSEERR;
 #define WARNING    0
 
 /* used by eval.c */
+#define OVERFLOW  1
 #define OK_EXPR   0
 #define BAD_EXPR -1
 #define DIV_ZERO -2
@@ -322,6 +324,9 @@ extern int SWITCH_Q;
 extern char *SWITCH_eq;
 #ifdef VMS
 extern int SWITCH_D;
+#endif
+#ifdef PERMUTATE
+extern int SWITCH_P;
 #endif
 
 extern int inCdb;

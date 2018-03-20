@@ -172,4 +172,4 @@ Language support
     include the new str_???.c in the next release and might even release the
     foreign language binaries.
 
-$Id: README,v 1.4 2000/08/31 10:22:56 anton Exp $
+$Id: README,v 1.1.1.1 2000/08/31 10:22:56 iltzu Exp $

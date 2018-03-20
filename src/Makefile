@@ -14,8 +14,9 @@ CC = gcc			# req. for linux
 # (4)   -DEXT94                             ICWS'94 + SEQ,SNE,NOP,*,{,}
 # (5)   -DSMALLMEM                          16-bit addresses, less memory
 # (6)   -DXWINGRAPHX    1                   X-Windows graphics (UNIX)
+# (7)   -DPERMUTATE                         enables -P switch
 
-CFLAGS = -O -DEXT94 -DXWINGRAPHX
+CFLAGS = -O -DEXT94 -DXWINGRAPHX -DPERMUTATE
 LFLAGS = -x
 # LIB = -lcurses -ltermlib		# enable this one for curses display
 # LIB = -lvgagl -lvga			# enable this one for Linux/SVGA

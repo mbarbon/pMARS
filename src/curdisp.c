@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Philip Kendall
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * curdisp.c: curses display.
- * $Id: curdisp.c,v 1.2 2000/08/20 13:29:31 anton Exp $
+ * $Id: curdisp.c,v 1.2 2000/12/24 12:51:48 iltzu Exp $
  */
 
 #if defined(CURSESGRAPHX)
@@ -159,7 +160,7 @@ cur_display_cycle()
         wrefresh(corewin);
       }
     }
-#if SYSV && KEYPRESSED
+#if defined(SYSV) && defined(KEYPRESS)                         /* PAK */
   if (wgetch(corewin) != ERR)
     debugState = STEP;
 #endif
@@ -182,7 +183,7 @@ init_curses()
   nonl();
 
 /* Handle keypad if it is supported */
-#if KEYPRESSED && SYSV
+#if defined(SYSV) && defined(KEYPRESS)                         /* PAK */
   keypad(stdscr, TRUE);
 #endif
 }

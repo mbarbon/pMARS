@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * global.c: global data declarations
- * $Id: global.c,v 1.2 2000/08/20 13:29:34 anton Exp $
+ * $Id: global.c,v 1.3 2000/12/25 00:49:08 iltzu Exp $
  */
 
 #ifndef _GLOBAL_INCLUDED
@@ -54,6 +55,9 @@ int     SWITCH_Q = -1;                /* not set */
 char   *SWITCH_eq = DEFAULTSCORE;
 #ifdef VMS
 int     SWITCH_D;
+#endif
+#ifdef PERMUTATE
+int     SWITCH_P;
 #endif
 
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \

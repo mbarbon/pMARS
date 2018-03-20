@@ -12,5 +12,6 @@ Authors
     front-end. Martin Maierhofer (m.maierhofer@ieee.org) contributed the
     code for the X-Windows and the linux SVGA displays. Nathan Summers
     (00ncsummers@bsuvc.bsu.edu) ported pMARS to VMS. Ken Espiritu provided
-    an optimized version of sim.c which runs fast on x86 machines.
+    an optimized version of sim.c which runs fast on x86 machines. Ilmari
+    Karonen (iltzu@sci.fi) added the -P option and various improvements.
 

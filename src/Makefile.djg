@@ -9,7 +9,8 @@ CC = gcc
 #                                           graphics
 # (3)   -DEXT94                             ICWS'94 + SEQ,SNE,NOP,*,{,}
 # (4)   -DSMALLMEM                          16-bit addresses, less memory
-CFLAGS = -O2 -m486 -DGRAPHX -DEXT94
+# (5)   -DPERMUTATE                         enables -P switch
+CFLAGS = -O2 -m486 -DGRAPHX -DEXT94 -DPERMUTATE
 # only tested with PDCurses (-lcurses)
 LIB = -lgrx -lpc
 

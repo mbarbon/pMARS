@@ -18,7 +18,7 @@
 
 /*
  * pos.c: RNG and positioning functions
- * $Id: pos.c,v 1.2 2000/08/20 13:29:42 anton Exp $
+ * $Id: pos.c,v 1.1.1.1 2000/08/20 13:29:42 iltzu Exp $
  */
 #include "global.h"
 #include "sim.h"

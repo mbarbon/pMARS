@@ -1,5 +1,6 @@
 /* pMARS -- a portable Memory Array Redcode Simulator
  * Copyright (C) 1993-1996 Albert Ma, Na'ndor Sieben, Stefan Strack and Mintardjo Wangsawidjaja
+ * Copyright (C) 2000 Ilmari Karonen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 
 /*
  * eval.c: expression evaluator used by assembler and debugger
- * $Id: eval.c,v 1.2 2000/08/20 13:29:33 anton Exp $
+ * $Id: eval.c,v 1.3 2000/12/25 00:49:08 iltzu Exp $
  */
 
 #include <ctype.h>
@@ -112,9 +113,17 @@ calc(x, y, op)
 
   switch (op) {
   case '+':
+    if (evalerr == OK_EXPR && (x > 0 ?
+                               y > 0 && x > LONG_MAX - y :
+                               y < 0 && x < LONG_MIN - y ))
+      evalerr = OVERFLOW;
     z = x + y;
     break;
   case '-':
+    if (evalerr == OK_EXPR && (x > 0 ?
+                               y < 0 && x > LONG_MAX + y :
+                               y > 0 && x < LONG_MIN + y ))
+      evalerr = OVERFLOW;
     z = x - y;
     break;
   case '/':
@@ -125,6 +134,12 @@ calc(x, y, op)
       z = x / y;
     break;
   case '*':
+    if (evalerr == OK_EXPR && x != 0 && y != 0 &&
+        x != -1 && y != -1 &&    /* LONG_MIN/(-1) causes FP error! */
+        ((x > 0) == (y > 0) ?
+         LONG_MAX / y / x == 0 :
+         LONG_MIN / y / x == 0 ))
+      evalerr = OVERFLOW;
     z = x * y;
     break;
   case '%':
@@ -380,7 +395,7 @@ main()
   printf("Enter infix expression: ");
   gets(expr);
 
-  if ((err = eval_expr(expr, &result)) == OK_EXPR)
+  if ((err = eval_expr(expr, &result)) >= OK_EXPR)
     printf("Evaluation result:      %ld\n", result);
   else if (err == DIV_ZERO)
     printf("Division by zero in %s\n", expr);

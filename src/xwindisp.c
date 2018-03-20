@@ -19,7 +19,7 @@
 
 /*
  * xwindisp.c: user interface for XWindows graphics displays
- * $Id: xwindisp.c,v 1.3 2000/09/28 11:03:56 anton Exp $
+ * $Id: xwindisp.c,v 1.1.1.2 2000/09/28 11:03:56 iltzu Exp $
  */
 
 #ifdef XWINGRAPHX

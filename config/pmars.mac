@@ -1,4 +1,4 @@
-version= echo $Id: pmars.mac,v 1.1 2000/08/18 14:34:50 anton Exp $
+version= echo $Id: pmars.mac,v 1.1.1.1 2000/08/18 14:34:50 iltzu Exp $
 pmars.mac: default macro file for pmars (version 0.5+)
 The macros below include bindings for DOS extended keys; e.g. pressing the
 "F10" function key executes the "shell" command (the space before "sh"

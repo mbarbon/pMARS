@@ -18,7 +18,7 @@
 
 /*
  * uidisp.c: common user interface for DOS graphics/text displays
- * $Id: uidisp.c,v 1.2 2000/08/20 13:29:47 anton Exp $
+ * $Id: uidisp.c,v 1.1.1.1 2000/08/20 13:29:47 iltzu Exp $
  */
 
 #ifdef NEW_STYLE

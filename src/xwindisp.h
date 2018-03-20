@@ -18,7 +18,7 @@
 
 /*
  * xwindisp.h: user interface for X11 graphical displays
- * $Id: xwindisp.h,v 1.2 2000/08/20 13:29:50 anton Exp $
+ * $Id: xwindisp.h,v 1.1.1.1 2000/08/20 13:29:50 iltzu Exp $
  */
 
 #ifdef XWINGRAPHX
