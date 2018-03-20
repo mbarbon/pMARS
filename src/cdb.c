@@ -1477,20 +1477,20 @@ subst_eval(char *inpStr, long *result)
       substitute(buf[bi1], outs2, outs, buf[bi2]);
     }
     if (warriors < MAXWARRIOR) {/* PCN where N==warriors is PC */
-      sprintf(outs, "%d", (targetID == QUEUE || targetID == PSP ?
-                           0 : (targetID == WARRIOR ?
-                                W - warrior : progCnt)));
+      sprintf(outs, "%ld", (targetID == QUEUE || targetID == PSP ?
+                            0 : (targetID == WARRIOR ?
+                                 W - warrior : progCnt)));
       sprintf(outs2, "PC%d", warriors);
       SWITCHBI;
       substitute(buf[bi1], outs2, outs, buf[bi2]);
     }
     SWITCHBI;
-    sprintf(outs, "%d", (targetID == QUEUE || targetID == PSP ?
-                         0 : (targetID == WARRIOR ?
-                              W - warrior : progCnt)));
+    sprintf(outs, "%ld", (targetID == QUEUE || targetID == PSP ?
+                          0 : (targetID == WARRIOR ?
+                               W - warrior : progCnt)));
     substitute(buf[bi1], "PC", outs, buf[bi2]);
     SWITCHBI;
-    sprintf(outs, "%d", (cycle + (warriorsLeft ? warriorsLeft : 1) - 1) /
+    sprintf(outs, "%ld", (cycle + (warriorsLeft ? warriorsLeft : 1) - 1) /
             (warriorsLeft ? warriorsLeft : 1));
     substitute(buf[bi1], "CYCLE", outs, buf[bi2]);
     SWITCHBI;
@@ -2416,7 +2416,7 @@ results(outp)
       fprintf(outp, nameByAuthorScores, warrior[idxV[i]].name, warrior[idxV[i]].authorName,
               scrV[idxV[i]]);
       if (warriors > 2) {
-        fprintf(outp, resultsAre);
+        fputs(resultsAre, outp);
         for (j = 0; j < warriors; ++j) {
           fprintf(outp, " %d", warrior[idxV[i]].score[j]);
         }
@@ -2491,7 +2491,7 @@ results(outp)
       fprintf(outp, nameByAuthorScores, warrior[idxV[i]].name, warrior[idxV[i]].authorName,
               scrV[idxV[i]]);
       if (warriors > 2) {
-        fprintf(outp, resultsAre);
+        fputs(resultsAre, outp);
         for (j = 0; j < warriors; ++j) {
           fprintf(outp, " %d", warrior[idxV[i]].score[j]);
         }
@@ -2508,7 +2508,7 @@ results(outp)
     fprintf(outp, nameByAuthorScores, warrior[idxV[i]].name, warrior[idxV[i]].authorName,
             scrV[idxV[i]]);
     if (warriors > 2) {
-      fprintf(outp, resultsAre);
+      fputs(resultsAre, outp);
       for (j = 0; j < warriors; ++j) {
         fprintf(outp, " %d", warrior[idxV[i]].score[j]);
       }

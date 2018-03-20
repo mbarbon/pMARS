@@ -617,7 +617,7 @@ textout(char *str)
   macputs(str);
 #else
   if (!inCdb)
-    fprintf(stderr, str);
+    fputs(str, stderr);
 #if defined DOSALLGRAPHX
   else {
     if (displayMode == TEXT)
@@ -643,7 +643,7 @@ textout(char *str)
     xWin_puts(str);
 #else                                /* no display */
   else
-    fprintf(stderr, str);
+    fputs(str, stderr);
 #endif                                /* XWINGRAPHX */
 #endif                                /* LINUXGRAPHX */
 #endif                                /* DOSGRXGRAPHX */
@@ -785,7 +785,7 @@ errprn(errType code, line_st *aline, char *arg)
 #ifdef __MAC__
     textout(notEnoughMemErr);
 #else
-    fprintf(stderr, notEnoughMemErr);
+    fputs(notEnoughMemErr, stderr);
 #endif
     Exit(MEMERR);
     break;
@@ -868,7 +868,7 @@ errprn(errType code, line_st *aline, char *arg)
   }
 
   if (ierr >= ERRMAX) {
-    sprintf(outs, tooManyMsgErr);
+    sprintf(outs, "%s", tooManyMsgErr);
 #ifndef VMS
     textout(outs);
 #else

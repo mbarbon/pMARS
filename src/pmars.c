@@ -283,7 +283,7 @@ main(int argc, char **argv)
 #endif
 #if defined(LINUXGRAPHX)
   if (vga_init() == -1) {
-    fprintf(stderr, cantInitSvga);
+    fputs(cantInitSvga, stderr);
     exit(1);
   }
   if ((console_fd = open("/dev/console", O_RDONLY)) == -1) {

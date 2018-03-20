@@ -223,7 +223,7 @@ static void draw_border(void);
 static void
 my_err(char *s)
 {
-  fprintf(stderr, s);
+  fputs(s, stderr);
   Exit(1);
 }
 

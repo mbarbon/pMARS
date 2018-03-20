@@ -1077,12 +1077,12 @@ svga_open_graphics(void)
     xsize = 640;
     ysize = 480;
     if (!vga_hasmode(gMode)) {
-      fprintf(stderr, tryingNext);
+      fputs(tryingNext, stderr);
       gMode = G320x200x256;
       xsize = 320;
       ysize = 200;
       if (!vga_hasmode(gMode)) {
-	fprintf(stderr, noModes);
+	fputs(noModes, stderr);
 	exit(1);
       }
     }
