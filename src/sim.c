@@ -1313,7 +1313,7 @@ nextround:
 #ifndef SERVER
     if (debugState == BREAK) {
       if (warriorsLeft == 1 && warriors != 1)
-	sprintf(outs, warriorTerminatedEndOfRound, W - warrior, W->name, round);
+	sprintf(outs, warriorTerminatedEndOfRound, W - warrior, W->name, tournamentRound);
       else
 	sprintf(outs, endOfRound, tournamentRound);
       debugState = cdb(outs);

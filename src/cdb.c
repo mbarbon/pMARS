@@ -1494,7 +1494,7 @@ subst_eval(char *inpStr, long *result)
             (warriorsLeft ? warriorsLeft : 1));
     substitute(buf[bi1], "CYCLE", outs, buf[bi2]);
     SWITCHBI;
-    sprintf(outs, "%d", round);
+    sprintf(outs, "%d", tournamentRound);
     substitute(buf[bi1], "ROUND", outs, buf[bi2]);
 
     SWITCHBI;
@@ -1800,7 +1800,7 @@ print_registers(void)
 #endif
   int     nFuture, nPast, count, taskHalf = (coreSize <= 10000 ? 7 : 5);
 
-  sprintf(outs, roundOfCycle, round, rounds,
+  sprintf(outs, roundOfCycle, tournamentRound, rounds,
           (cycle + (warriorsLeft ? warriorsLeft : 1) - 1) /
           (warriorsLeft ? warriorsLeft : 1));
   cdb_fputs(outs, COND);
