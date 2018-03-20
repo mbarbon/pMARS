@@ -14,6 +14,9 @@
  *
  * global.h: global header
  * $Id: global.h,v 1.29 1996/02/20 19:15:37 stst Exp stst $
+ *
+ * 10-23-98 Pentium optimized version 30% faster than the original
+ *          Ken Espiritu   (kespirit@cesun1.ce.vt.edu)
  */
 
 #include "config.h"
@@ -118,8 +121,8 @@ enum {
 
 /* Version and date */
 
-#define PMARSVER  85
-#define PMARSDATE "2/20/96"
+#define PMARSVER  86
+#define PMARSDATE "04/10/00"
 
 #ifdef VMS                        /* Must change codes to work with VMS error
                                  * handling */
@@ -218,7 +221,7 @@ enum addr_mode {
 enum op {
   MOV, ADD, SUB, MUL, DIV, MOD, JMZ,
   JMN, DJN, CMP, SLT, SPL, DAT, JMP,
-  SEQ, SNE, NOP, LDP, STP
+  SEQ,  SNE, NOP, LDP, STP
 };                                /* has to match asm.c:opname[] */
 
 enum modifier {
@@ -247,35 +250,39 @@ typedef long S32_T;
 
 /* Memory structure */
 typedef struct mem_struct {
-  FIELD_T opcode;
-  FIELD_T debuginfo;
-  FIELD_T A_mode, B_mode;
   ADDR_T  A_value, B_value;
+  FIELD_T opcode;
+  FIELD_T A_mode, B_mode;
+  FIELD_T debuginfo;
+
 }       mem_struct;
 
 /* Warrior structure */
 typedef struct warrior_struct {
-  char   *name;                        /* warrior name */
-  char   *version;
-  char   *date;
-  char   *fileName;                /* file name */
-  char   *authorName;                /* author name */
-  int     instLen;                /* Length of instBank */
-  int     offset;                /* Offset value specified by 'ORG' or 'END'.
-                                 * 0 is default */
-  mem_struct *instBank;
+  long    pSpaceIDNumber;
 #ifdef DOS16
   ADDR_T far *taskHead, far * taskTail;
 #else
   ADDR_T *taskHead, *taskTail;
 #endif
   int     tasks;
-  struct warrior_struct *nextWarrior;
-  short   score[MAXWARRIOR * 2 - 1];
-  ADDR_T  position;                /* load position in core */
-  long    pSpaceIDNumber;
-  int     pSpaceIndex;
   ADDR_T  lastResult;
+  int     pSpaceIndex;
+  ADDR_T  position;                /* load position in core */
+  int     instLen;                /* Length of instBank */
+  int     offset;                /* Offset value specified by 'ORG' or 'END'.
+                                 * 0 is default */
+  short   score[MAXWARRIOR * 2 - 1];
+
+  char   *name;                        /* warrior name */
+  char   *version;
+  char   *date;
+  char   *fileName;                /* file name */
+  char   *authorName;                /* author name */
+  mem_struct *instBank;
+
+  struct warrior_struct *nextWarrior;
+
 }       warrior_struct;
 
 /* ***********************************************************************

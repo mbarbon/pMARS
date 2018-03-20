@@ -14,6 +14,9 @@
  *
  * sim.c: simulator
  * $Id: sim.c,v 3.19 1996/02/20 19:15:48 stst Exp stst $
+ *
+ * 10-23-98 Pentium optimized version 30% faster than the original
+ *          Ken Espiritu
  */
 
 #include "global.h"
@@ -118,12 +121,12 @@ do { \
 
 #ifdef PSPACE
 #define get_pspace(idx) (((idx) % pSpaceSize) ?\
-            *(pSpace[W->pSpaceIndex] + ((idx) % pSpaceSize)) : W->lastResult)
+	    *(pSpace[W->pSpaceIndex] + ((idx) % pSpaceSize)) : W->lastResult)
 #define set_pspace(idx,value) do {\
-            if ((idx) % pSpaceSize) \
-                *(pSpace[W->pSpaceIndex] + ((idx) % pSpaceSize)) = value;\
-            else W->lastResult = value;\
-            } while(0)
+	    if ((idx) % pSpaceSize) \
+		*(pSpace[W->pSpaceIndex] + ((idx) % pSpaceSize)) = value;\
+	    else W->lastResult = value;\
+	    } while(0)
 #endif
 
 #define OP(opcode,modifier) (opcode<<3)+modifier
@@ -149,18 +152,30 @@ extern char *fatalErrorInSimulator;
 extern char *warriorTerminatedEndOfRound;
 extern char *endOfRound;
 
-int     round;
-long    cycle;
-ADDR_T  progCnt;                /* program counter */
 warrior_struct *W;                /* indicate which warrior is running */
+U32_T   totaltask;                /* size of the taskQueue */
+ADDR_T FAR *endQueue;
+ADDR_T FAR *taskQueue;
+ADDR_T  progCnt;                /* program counter */
+
+  mem_struct FAR *destPtr;        /* pointer used to copy program to core */
+  mem_struct FAR *tempPtr;        /* temporary pointer used in op decode phase */
+
+  mem_struct IR;                /* current instruction and A cell */
+#ifdef NEW_MODES
+//  mem_struct IRA;                /* A/B_field hold A-field of A/B-pointer
+//                                 * necessary for '}' mode */
+ADDR_T AA_Value, AB_Value;
+#endif
 
 mem_struct FAR *memory;
-ADDR_T FAR *taskQueue;
+
+long    cycle;
+int     round;
+
 char    alloc_p = 0;                /* indicate whether memory has been allocated */
 int     warriorsLeft;                /* number of warriors still left in core */
 
-U32_T   totaltask;                /* size of the taskQueue */
-ADDR_T FAR *endQueue;
 warrior_struct *endWar;                /* end of the warriors array */
 
 /*--------------------*/
@@ -208,30 +223,24 @@ simulator1()
   ADDR_T  positions = coreSize + 1 - (separation << 1);
   ADDR_T  coreSize1 = coreSize - 1;
   warrior_struct *starter = warrior;        /* pointer to warrior that starts
-                                         * round */
+					 * round */
   U32_T   cycles2 = warriors * cycles;
-  mem_struct IR;                /* current instruction and A cell */
 #ifndef SERVER
   char    outs[60];                /* for cdb() entering message */
 #endif
-#ifdef NEW_MODES
-  mem_struct IRA;                /* A/B_field hold A-field of A/B-pointer
-                                 * necessary for '}' mode */
-#endif
   mem_struct *sourcePtr;        /* pointer used to copy program to core */
   mem_struct *endPtr;                /* pointer used to copy program to core */
+register  int     temp;                        /* general purpose temporary variable */
   int     addrA, addrB;                /* A and B pointers */
-  int     temp;                        /* general purpose temporary variable */
 #ifdef TRACEGRAPHX
   int     temp2;
 #endif
   ADDR_T FAR *tempPtr2;
-  mem_struct FAR *destPtr;        /* pointer used to copy program to core */
-  mem_struct FAR *tempPtr;        /* temporary pointer used in op decode phase */
 #ifdef NEW_MODES
   ADDR_T FAR *offsPtr;                /* temporary pointer used in op decode phase */
 #endif
 
+  endWar = warrior + warriors;
 
 #ifdef DOS16
   if (!alloc_p) {
@@ -270,7 +279,6 @@ simulator1()
     endQueue = taskQueue + totaltask;
   }
 #endif
-  endWar = warrior + warriors;
   if (SWITCH_e)
     debugState = STEP;                /* automatically enter debugger */
   if (!debugState)
@@ -295,12 +303,12 @@ simulator1()
     cycle = cycles2;
     if (warriors > 1) {
       if (warriors == 2) {
-        warrior[1].position = separation + seed % positions;
-        seed = rng(seed);
+	warrior[1].position = separation + seed % positions;
+	seed = rng(seed);
       } else {
-        if (posit())
-          npos();                /* use back-up positioning algo npos if posit
-                                 * fails */
+	if (posit())
+	  npos();                /* use back-up positioning algo npos if posit
+				 * fails */
       }
     }
     /* create nextWarrior links each round */
@@ -319,18 +327,18 @@ simulator1()
     tempPtr2 = endQueue - taskNum - 1;
     temp = 0;
     do {
-      W->tasks = 1;
       /* initialize head, tail, and taskQueue */
       W->taskHead = tempPtr2;
       W->taskTail = tempPtr2 + 1;
       *tempPtr2 = W->position + W->offset;
+      W->tasks = 1;
       tempPtr2 -= taskNum;
       destPtr = memory + W->position;
       sourcePtr = W->instBank;
       endPtr = sourcePtr + W->instLen;
       /* copy the warriors to core */
       while (sourcePtr != endPtr) {
-        *destPtr++ = *sourcePtr++;
+	*destPtr++ = *sourcePtr++;
       }
       display_spl(temp, 1);
       W = W->nextWarrior;
@@ -340,145 +348,178 @@ simulator1()
     /* the inner loop of execution */
     do {                        /* each cycle */
       display_cycle();
-      progCnt = *(W->taskHead++);
+     // progCnt = *(W->taskHead++);
+     // IR = memory[progCnt];        /* copy instruction into register */
+	IR = memory[(progCnt= *(W->taskHead++))];        
 #ifndef DOS16
       if (W->taskHead == endQueue)
-        W->taskHead = taskQueue;
+	W->taskHead = taskQueue;
 #endif
 #ifndef SERVER
       if (debugState && ((debugState == STEP) || memory[progCnt].debuginfo))
-        debugState = cdb("");
+	debugState = cdb("");
 #endif
-      IR = memory[progCnt];        /* copy instruction into register */
 #ifdef NEW_MODES
-      IRA.B_value = IR.A_value;        /* necessary if B-mode is immediate */
+      AB_Value = IR.A_value;        /* necessary if B-mode is immediate */
 #endif
 
       /*
        * evaluate A operand.  This is the hardest part of the entire
        * simulator code.  Obfuscated C code at it's finest
        */
-      if (IR.A_mode == (FIELD_T) IMMEDIATE) {
-#ifdef NEW_MODES
-        IRA.A_value = IR.A_value;
-#endif
-        IR.A_value = IR.B_value;
-        addrA = progCnt;
-      } else {
-        ADDMOD(IR.A_value, progCnt, addrA);
-        tempPtr = &memory[addrA];
-#ifdef NEW_MODES
-        IR.A_value = tempPtr->B_value;
-        IRA.A_value = tempPtr->A_value;
-#else
-        IR.A_value = temp = tempPtr->B_value;
-#endif
-        if (IR.A_mode != (FIELD_T) DIRECT) {
-#ifdef NEW_MODES
-          if (INDIR_A(IR.A_mode)) {
-            IR.A_mode = RAW_MODE(IR.A_mode);
-            offsPtr = &(tempPtr->A_value);
-          } else
-            offsPtr = &(tempPtr->B_value);
-          temp = *offsPtr;
-#endif
-          if (IR.A_mode == (FIELD_T) PREDECR) {
-            if (--temp < 0)
-              temp = coreSize1;
-#ifdef NEW_MODES
-            *offsPtr = temp;
-#else
-            tempPtr->B_value = temp;
-#endif
-            display_dec(addrA);
-          }
-          /* jk - added os2 part */
-#ifdef GRAPHX
-          display_inc(addrA);
-#else
-#if defined(TRACEGRAPHX)
-          temp2 = addrA;        /* make the trace accurate */
-#endif
-#endif
-          ADDMOD(temp, addrA, addrA);
-          IR.A_value = memory[addrA].B_value;
-#ifdef NEW_MODES
-          IRA.A_value = memory[addrA].A_value;
-#endif
-          if (IR.A_mode == (FIELD_T) POSTINC) {
-            if (++temp == coreSize)
-              temp = 0;
-#ifdef NEW_MODES
-            *offsPtr = temp;
-#else
-            tempPtr->B_value = temp;
-#endif
-#ifdef TRACEGRAPHX
-            display_inc(temp2);
-#endif
-          }
-        }
-      }
+if (IR.A_mode != (FIELD_T) IMMEDIATE)
+{
+	ADDMOD(IR.A_value, progCnt, addrA);
+	tempPtr = &memory[addrA];
+
+	if (IR.A_mode != (FIELD_T) DIRECT)
+	{
+		#ifdef NEW_MODES
+		if (INDIR_A(IR.A_mode))
+		{
+			IR.A_mode = RAW_MODE(IR.A_mode);
+			offsPtr = &(tempPtr->A_value);
+		} else
+			offsPtr = &(tempPtr->B_value);
+
+		temp = *offsPtr;
+		#endif
+		if (IR.A_mode == (FIELD_T) PREDECR)
+		{
+			if (--temp < 0)
+				temp = coreSize1;
+			#ifdef NEW_MODES
+			*offsPtr = temp;
+			#else
+			tempPtr->B_value = temp;
+			#endif
+			display_dec(addrA);
+		}
+		/* jk - added os2 part */
+		#ifdef GRAPHX
+		display_inc(addrA);
+		#else
+		#if defined(TRACEGRAPHX)
+		temp2 = addrA;        /* make the trace accurate */
+		#endif
+		#endif
+		ADDMOD(temp, addrA, addrA);
+
+		destPtr = &memory[addrA];       //new
+		#ifdef NEW_MODES
+		AA_Value = destPtr->A_value;
+		#endif
+		IR.A_value = destPtr->B_value;
+
+		if (IR.A_mode == (FIELD_T) POSTINC)
+		{
+			if (++temp == coreSize)
+				temp = 0;
+			#ifdef NEW_MODES
+			*offsPtr = temp;
+			#else
+			tempPtr->B_value = temp;
+			#endif
+			#ifdef TRACEGRAPHX
+			display_inc(temp2);
+			#endif
+		}
+	} else
+	{
+	#ifdef NEW_MODES
+
+	IR.A_value = tempPtr->B_value;
+	AA_Value = tempPtr->A_value;
+
+	#else
+	IR.A_value = temp = tempPtr->B_value;
+	#endif
+	}
+} else
+{
+	#ifdef NEW_MODES
+	AA_Value = IR.A_value;
+	#endif
+	addrA = progCnt;
+
+	IR.A_value = IR.B_value;
+}
+
       /*
        * evaluate B operand.  This is the hardest part of the entire
        * simulator code.  Obfuscated C code at it's finest
        */
+ //     addrB = progCnt;
+if (IR.B_mode != (FIELD_T) IMMEDIATE)
+{
+	ADDMOD(IR.B_value, progCnt, addrB);
+	 tempPtr = &memory[addrB];
+
+	if (IR.B_mode != (FIELD_T) DIRECT)
+	{
+		#ifdef NEW_MODES
+		if (INDIR_A(IR.B_mode))
+		{
+			IR.B_mode = RAW_MODE(IR.B_mode);
+			offsPtr = &(tempPtr->A_value);
+		} else
+			offsPtr = &(tempPtr->B_value);
+		temp = *offsPtr;
+		#endif
+		if (IR.B_mode == (FIELD_T) PREDECR)
+		{
+			if (--temp < 0)
+				temp = coreSize1;
+			#ifdef NEW_MODES
+			*offsPtr = temp;
+			#else
+			tempPtr->B_value = temp;
+			#endif
+			display_dec(addrB);
+		}
+		/* jk - added os2 part */
+		#ifdef GRAPHX
+		display_inc(addrB);
+		#else
+		#if defined(TRACEGRAPHX)
+		temp2 = addrB;
+		#endif
+		#endif
+
+		ADDMOD(temp, addrB, addrB);
+
+		destPtr = &memory[addrB];
+		#ifdef NEW_MODES
+		AB_Value = destPtr->A_value;
+		#endif
+
+		IR.B_value = destPtr->B_value;
+
+		if (IR.B_mode == (FIELD_T) POSTINC)
+		{
+			if (++temp == coreSize)
+				temp = 0;
+			#ifdef NEW_MODES
+			*offsPtr = temp;
+			#else
+			tempPtr->B_value = temp;
+			#endif
+			#ifdef TRACEGRAPHX
+			display_inc(temp2);
+			#endif
+		}
+	} else
+	{
+	#ifdef NEW_MODES
+	AB_Value = tempPtr->A_value;
+
+	IR.B_value = tempPtr->B_value;
+	#else
+	IR.B_value = temp = tempPtr->B_value;
+	#endif
+	}
+} else
       addrB = progCnt;
-      if (IR.B_mode != (FIELD_T) IMMEDIATE) {
-        ADDMOD(IR.B_value, progCnt, addrB);
-        tempPtr = &memory[addrB];
-#ifdef NEW_MODES
-        IR.B_value = tempPtr->B_value;
-        IRA.B_value = tempPtr->A_value;
-#else
-        IR.B_value = temp = tempPtr->B_value;
-#endif
-        if (IR.B_mode != (FIELD_T) DIRECT) {
-#ifdef NEW_MODES
-          if (INDIR_A(IR.B_mode)) {
-            IR.B_mode = RAW_MODE(IR.B_mode);
-            offsPtr = &(tempPtr->A_value);
-          } else
-            offsPtr = &(tempPtr->B_value);
-          temp = *offsPtr;
-#endif
-          if (IR.B_mode == (FIELD_T) PREDECR) {
-            if (--temp < 0)
-              temp = coreSize1;
-#ifdef NEW_MODES
-            *offsPtr = temp;
-#else
-            tempPtr->B_value = temp;
-#endif
-            display_dec(addrB);
-          }
-          /* jk - added os2 part */
-#ifdef GRAPHX
-          display_inc(addrB);
-#else
-#if defined(TRACEGRAPHX)
-          temp2 = addrB;
-#endif
-#endif
-          ADDMOD(temp, addrB, addrB);
-          IR.B_value = memory[addrB].B_value;
-#ifdef NEW_MODES
-          IRA.B_value = memory[addrB].A_value;
-#endif
-          if (IR.B_mode == (FIELD_T) POSTINC) {
-            if (++temp == coreSize)
-              temp = 0;
-#ifdef NEW_MODES
-            *offsPtr = temp;
-#else
-            tempPtr->B_value = temp;
-#endif
-#ifdef TRACEGRAPHX
-            display_inc(temp2);
-#endif
-          }
-        }
-      }
       /*
        * addrA holds the A-pointer IR.A_value holds the B operand of the
        * A-pointer cell. temp holds the B-pointer IR.B_value holds the B
@@ -490,8 +531,8 @@ simulator1()
        * holds the A operand of the B-pointer cell.
        */
 
-#define ADDRA_AVALUE IRA.A_value
-#define ADDRB_AVALUE IRA.B_value
+#define ADDRA_AVALUE AA_Value
+#define ADDRB_AVALUE AB_Value
 #else
 #define ADDRA_AVALUE memory[addrA].A_value
 #define ADDRB_AVALUE memory[addrB].A_value
@@ -502,572 +543,555 @@ simulator1()
       switch (IR.opcode) {
 
       case OP(MOV, mA):
-        display_read(addrA);
-        memory[addrB].A_value = ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value = ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(MOV, mF):
-        memory[addrB].A_value = ADDRA_AVALUE;
-        /* FALLTHRU */
+	memory[addrB].A_value = ADDRA_AVALUE;
+	/* FALLTHRU */
       case OP(MOV, mB):
-        display_read(addrA);
-        memory[addrB].B_value = IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value = IR.A_value;
+	display_write(addrB);
+	break;
 
       case OP(MOV, mAB):
-        display_read(addrA);
-        memory[addrB].B_value = ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value = ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(MOV, mX):
-        memory[addrB].B_value = ADDRA_AVALUE;
-        /* FALLTHRU */
+	memory[addrB].B_value = ADDRA_AVALUE;
+	/* FALLTHRU */
       case OP(MOV, mBA):
-        display_read(addrA);
-        memory[addrB].A_value = IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value = IR.A_value;
+	display_write(addrB);
+	break;
 
-      case OP(MOV, mI):
-        display_read(addrA);
-#ifndef SERVER
-        if (!copyDebugInfo)
-          temp = memory[addrB].debuginfo;
-#endif
-        memory[addrB] = memory[addrA];
-#ifndef SERVER
-        if (!copyDebugInfo)
-          memory[addrB].debuginfo = temp;
-#endif
-        memory[addrB].B_value = IR.A_value;
-#ifdef NEW_MODES
-        memory[addrB].A_value = IRA.A_value;
-#endif
-        display_write(addrB);
-        break;
 
       case OP(ADD, mA):
-        display_read(addrA);
-        ADDMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
-        memory[addrB].A_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	ADDMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
+	memory[addrB].A_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(ADD, mI):
       case OP(ADD, mF):
-        ADDMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
-        memory[addrB].A_value = temp;
-        /* FALLTHRU */
+	ADDMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
+	memory[addrB].A_value = temp;
+	/* FALLTHRU */
       case OP(ADD, mB):
-        display_read(addrA);
-        ADDMOD(IR.B_value, IR.A_value, temp);
-        memory[addrB].B_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	ADDMOD(IR.B_value, IR.A_value, temp);
+	memory[addrB].B_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(ADD, mAB):
-        display_read(addrA);
-        ADDMOD(IR.B_value, ADDRA_AVALUE, temp);
-        memory[addrB].B_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	ADDMOD(IR.B_value, ADDRA_AVALUE, temp);
+	memory[addrB].B_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(ADD, mX):
-        ADDMOD(IR.B_value, ADDRA_AVALUE, temp);
-        memory[addrB].B_value = temp;
-        /* FALLTHRU */
+	ADDMOD(IR.B_value, ADDRA_AVALUE, temp);
+	memory[addrB].B_value = temp;
+	/* FALLTHRU */
       case OP(ADD, mBA):
-        display_read(addrA);
-        ADDMOD(ADDRB_AVALUE, IR.A_value, temp);
-        memory[addrB].A_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	ADDMOD(ADDRB_AVALUE, IR.A_value, temp);
+	memory[addrB].A_value = temp;
+	display_write(addrB);
+	break;
 
 
       case OP(SUB, mA):
-        display_read(addrA);
-        SUBMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
-        memory[addrB].A_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	SUBMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
+	memory[addrB].A_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(SUB, mI):
       case OP(SUB, mF):
-        SUBMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
-        memory[addrB].A_value = temp;
-        /* FALLTHRU */
+	SUBMOD(ADDRB_AVALUE, ADDRA_AVALUE, temp);
+	memory[addrB].A_value = temp;
+	/* FALLTHRU */
       case OP(SUB, mB):
-        display_read(addrA);
-        SUBMOD(IR.B_value, IR.A_value, temp);
-        memory[addrB].B_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	SUBMOD(IR.B_value, IR.A_value, temp);
+	memory[addrB].B_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(SUB, mAB):
-        display_read(addrA);
-        SUBMOD(IR.B_value, ADDRA_AVALUE, temp);
-        memory[addrB].B_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	SUBMOD(IR.B_value, ADDRA_AVALUE, temp);
+	memory[addrB].B_value = temp;
+	display_write(addrB);
+	break;
 
       case OP(SUB, mX):
-        SUBMOD(IR.B_value, ADDRA_AVALUE, temp);
-        memory[addrB].B_value = temp;
-        /* FALLTHRU */
+	SUBMOD(IR.B_value, ADDRA_AVALUE, temp);
+	memory[addrB].B_value = temp;
+	/* FALLTHRU */
       case OP(SUB, mBA):
-        display_read(addrA);
-        SUBMOD(ADDRB_AVALUE, IR.A_value, temp);
-        memory[addrB].A_value = temp;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	SUBMOD(ADDRB_AVALUE, IR.A_value, temp);
+	memory[addrB].A_value = temp;
+	display_write(addrB);
+	break;
 
 
-        /* the cast prevents overflow */
+	/* the cast prevents overflow */
       case OP(MUL, mA):
-        display_read(addrA);
-        memory[addrB].A_value =
-          (U32_T) ADDRB_AVALUE *ADDRA_AVALUE % coreSize;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value =
+	  (U32_T) ADDRB_AVALUE *ADDRA_AVALUE % coreSize;
+	display_write(addrB);
+	break;
 
       case OP(MUL, mI):
       case OP(MUL, mF):
-        memory[addrB].A_value =
-          (U32_T) ADDRB_AVALUE *ADDRA_AVALUE % coreSize;
-        /* FALLTHRU */
+	memory[addrB].A_value =
+	  (U32_T) ADDRB_AVALUE *ADDRA_AVALUE % coreSize;
+	/* FALLTHRU */
       case OP(MUL, mB):
-        display_read(addrA);
-        memory[addrB].B_value =
-          (U32_T) IR.B_value * IR.A_value % coreSize;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value =
+	  (U32_T) IR.B_value * IR.A_value % coreSize;
+	display_write(addrB);
+	break;
 
       case OP(MUL, mAB):
-        display_read(addrA);
-        memory[addrB].B_value =
-          (U32_T) IR.B_value * ADDRA_AVALUE % coreSize;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value =
+	  (U32_T) IR.B_value * ADDRA_AVALUE % coreSize;
+	display_write(addrB);
+	break;
 
       case OP(MUL, mX):
-        memory[addrB].B_value =
-          (U32_T) IR.B_value * ADDRA_AVALUE % coreSize;
-        /* FALLTHRU */
+	memory[addrB].B_value =
+	  (U32_T) IR.B_value * ADDRA_AVALUE % coreSize;
+	/* FALLTHRU */
       case OP(MUL, mBA):
-        display_read(addrA);
-        memory[addrB].A_value =
-          (U32_T) ADDRB_AVALUE *IR.A_value % coreSize;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value =
+	  (U32_T) ADDRB_AVALUE *IR.A_value % coreSize;
+	display_write(addrB);
+	break;
 
 
       case OP(DIV, mA):
-        display_read(addrA);
-        if (!ADDRA_AVALUE)
-          goto die;
-        memory[addrB].A_value = ADDRB_AVALUE / ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!ADDRA_AVALUE)
+	  goto die;
+	memory[addrB].A_value = ADDRB_AVALUE / ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(DIV, mB):
-        display_read(addrA);
-        if (!IR.A_value)
-          goto die;
-        memory[addrB].B_value = IR.B_value / IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!IR.A_value)
+	  goto die;
+	memory[addrB].B_value = IR.B_value / IR.A_value;
+	display_write(addrB);
+	break;
 
       case OP(DIV, mAB):
-        display_read(addrA);
-        if (!ADDRA_AVALUE)
-          goto die;
-        memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!ADDRA_AVALUE)
+	  goto die;
+	memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(DIV, mBA):
-        display_read(addrA);
-        if (!IR.A_value)
-          goto die;
-        memory[addrB].A_value = ADDRB_AVALUE / IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!IR.A_value)
+	  goto die;
+	memory[addrB].A_value = ADDRB_AVALUE / IR.A_value;
+	display_write(addrB);
+	break;
 
       case OP(DIV, mI):
       case OP(DIV, mF):
-        display_read(addrA);
-        if (ADDRA_AVALUE) {
-          memory[addrB].A_value = ADDRB_AVALUE / ADDRA_AVALUE;
-          display_write(addrB);
-          if (!IR.A_value)
-            goto die;
-          memory[addrB].B_value = IR.B_value / IR.A_value;
-          display_write(addrB);
-          break;
-        } else {
-          if (!IR.A_value)
-            goto die;
-          memory[addrB].B_value = IR.B_value / IR.A_value;
-          display_write(addrB);
-          goto die;
-        }
+	display_read(addrA);
+	if (ADDRA_AVALUE) {
+	  memory[addrB].A_value = ADDRB_AVALUE / ADDRA_AVALUE;
+	  display_write(addrB);
+	  if (!IR.A_value)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value / IR.A_value;
+	  display_write(addrB);
+	  break;
+	} else {
+	  if (!IR.A_value)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value / IR.A_value;
+	  display_write(addrB);
+	  goto die;
+	}
       case OP(DIV, mX):
-        display_read(addrA);
-        if (IR.A_value) {
-          memory[addrB].A_value = ADDRB_AVALUE / IR.A_value;
-          display_write(addrB);
-          if (!ADDRA_AVALUE)
-            goto die;
-          memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
-          display_write(addrB);
-          break;
-        } else {
-          if (!ADDRA_AVALUE)
-            goto die;
-          memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
-          display_write(addrB);
-          goto die;
-        }
+	display_read(addrA);
+	if (IR.A_value) {
+	  memory[addrB].A_value = ADDRB_AVALUE / IR.A_value;
+	  display_write(addrB);
+	  if (!ADDRA_AVALUE)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
+	  display_write(addrB);
+	  break;
+	} else {
+	  if (!ADDRA_AVALUE)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value / ADDRA_AVALUE;
+	  display_write(addrB);
+	  goto die;
+	}
 
       case OP(MOD, mA):
-        display_read(addrA);
-        if (!ADDRA_AVALUE)
-          goto die;
-        memory[addrB].A_value = ADDRB_AVALUE % ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!ADDRA_AVALUE)
+	  goto die;
+	memory[addrB].A_value = ADDRB_AVALUE % ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(MOD, mB):
-        display_read(addrA);
-        if (!IR.A_value)
-          goto die;
-        memory[addrB].B_value = IR.B_value % IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!IR.A_value)
+	  goto die;
+	memory[addrB].B_value = IR.B_value % IR.A_value;
+	display_write(addrB);
+	break;
 
       case OP(MOD, mAB):
-        display_read(addrA);
-        if (!ADDRA_AVALUE)
-          goto die;
-        memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!ADDRA_AVALUE)
+	  goto die;
+	memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
+	display_write(addrB);
+	break;
 
       case OP(MOD, mBA):
-        display_read(addrA);
-        if (!IR.A_value)
-          goto die;
-        memory[addrB].A_value = ADDRB_AVALUE % IR.A_value;
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	if (!IR.A_value)
+	  goto die;
+	memory[addrB].A_value = ADDRB_AVALUE % IR.A_value;
+	display_write(addrB);
+	break;
 
       case OP(MOD, mI):
       case OP(MOD, mF):
-        display_read(addrA);
-        if (ADDRA_AVALUE) {
-          memory[addrB].A_value = ADDRB_AVALUE % ADDRA_AVALUE;
-          display_write(addrB);
-          if (!IR.A_value)
-            goto die;
-          memory[addrB].B_value = IR.B_value % IR.A_value;
-          display_write(addrB);
-          break;
-        } else {
-          if (!IR.A_value)
-            goto die;
-          memory[addrB].B_value = IR.B_value % IR.A_value;
-          display_write(addrB);
-          goto die;
-        }
+	display_read(addrA);
+	if (ADDRA_AVALUE) {
+	  memory[addrB].A_value = ADDRB_AVALUE % ADDRA_AVALUE;
+	  display_write(addrB);
+	  if (!IR.A_value)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value % IR.A_value;
+	  display_write(addrB);
+	  break;
+	} else {
+	  if (!IR.A_value)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value % IR.A_value;
+	  display_write(addrB);
+	  goto die;
+	}
 
       case OP(MOD, mX):
-        display_read(addrA);
-        if (IR.A_value) {
-          memory[addrB].A_value = ADDRB_AVALUE % IR.A_value;
-          display_write(addrB);
-          if (!ADDRA_AVALUE)
-            goto die;
-          memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
-          display_write(addrB);
-          break;
-        } else {
-          if (!ADDRA_AVALUE)
-            goto die;
-          memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
-          display_write(addrB);
-          goto die;
-        }
+	display_read(addrA);
+	if (IR.A_value) {
+	  memory[addrB].A_value = ADDRB_AVALUE % IR.A_value;
+	  display_write(addrB);
+	  if (!ADDRA_AVALUE)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
+	  display_write(addrB);
+	  break;
+	} else {
+	  if (!ADDRA_AVALUE)
+	    goto die;
+	  memory[addrB].B_value = IR.B_value % ADDRA_AVALUE;
+	  display_write(addrB);
+	  goto die;
+	}
 
 
       case OP(JMZ, mA):
       case OP(JMZ, mBA):
-        display_read(addrB);
-        if (ADDRB_AVALUE)
-          break;
-        push(addrA);
-        goto nopush;
+	display_read(addrB);
+	if (ADDRB_AVALUE)
+	  break;
+	push(addrA);
+	goto nopush;
 
       case OP(JMZ, mF):
       case OP(JMZ, mX):
       case OP(JMZ, mI):
-        display_read(addrB);
-        if (ADDRB_AVALUE)
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	if (ADDRB_AVALUE)
+	  break;
+	/* FALLTHRU */
       case OP(JMZ, mB):
       case OP(JMZ, mAB):
-        display_read(addrB);
-        if (IR.B_value)
-          break;
-        push(addrA);
-        goto nopush;
+	display_read(addrB);
+	if (IR.B_value)
+	  break;
+	push(addrA);
+	goto nopush;
 
 
       case OP(JMN, mA):
       case OP(JMN, mBA):
-        display_read(addrB);
-        if (!ADDRB_AVALUE)
-          break;
-        push(addrA);
-        goto nopush;
+	display_read(addrB);
+	if (!ADDRB_AVALUE)
+	  break;
+	push(addrA);
+	goto nopush;
 
       case OP(JMN, mB):
       case OP(JMN, mAB):
-        display_read(addrB);
-        if (!IR.B_value)
-          break;
-        push(addrA);
-        goto nopush;
+	display_read(addrB);
+	if (!IR.B_value)
+	  break;
+	push(addrA);
+	goto nopush;
 
       case OP(JMN, mF):
       case OP(JMN, mX):
       case OP(JMN, mI):
-        display_read(addrB);
-        if (!ADDRB_AVALUE && !IR.B_value)
-          break;
-        push(addrA);
-        goto nopush;
+	display_read(addrB);
+	if (!ADDRB_AVALUE && !IR.B_value)
+	  break;
+	push(addrA);
+	goto nopush;
 
       case OP(DJN, mA):
       case OP(DJN, mBA):
 #ifdef NEW_MODES
-        if (ISNEG(--memory[addrB].A_value))
-          memory[addrB].A_value = coreSize1;
-        display_dec(addrB);
-        if (IRA.B_value == 1)
-          break;
+	if (ISNEG(--memory[addrB].A_value))
+	  memory[addrB].A_value = coreSize1;
+	display_dec(addrB);
+	if (AB_Value == 1)
+	  break;
 #else
-        if (!--memory[addrB].A_value)
-          break;
-        display_dec(addrB);
-        if (ISNEG(memory[addrB].A_value))
-          memory[addrB].A_value = coreSize1;
+	if (!--memory[addrB].A_value)
+	  break;
+	display_dec(addrB);
+	if (ISNEG(memory[addrB].A_value))
+	  memory[addrB].A_value = coreSize1;
 #endif
-        push(addrA);
-        goto nopush;
+	push(addrA);
+	goto nopush;
 
 
       case OP(DJN, mB):
       case OP(DJN, mAB):
-        if (ISNEG(--memory[addrB].B_value))
-          memory[addrB].B_value = coreSize1;
-        display_dec(addrB);
-        if (IR.B_value == 1)
-          break;
-        push(addrA);
-        goto nopush;
+	if (ISNEG(--memory[addrB].B_value))
+	  memory[addrB].B_value = coreSize1;
+	display_dec(addrB);
+	if (IR.B_value == 1)
+	  break;
+	push(addrA);
+	goto nopush;
 
       case OP(DJN, mF):
       case OP(DJN, mI):
       case OP(DJN, mX):
-        if (ISNEG(--memory[addrB].B_value))
-          memory[addrB].B_value = coreSize1;
-        if (ISNEG(--memory[addrB].A_value))
-          memory[addrB].A_value = coreSize1;
-        display_dec(addrB);
+	if (ISNEG(--memory[addrB].B_value))
+	  memory[addrB].B_value = coreSize1;
+	if (ISNEG(--memory[addrB].A_value))
+	  memory[addrB].A_value = coreSize1;
+	display_dec(addrB);
 #ifdef NEW_MODES
-        if ((IRA.B_value == 1) && (IR.B_value == 1))
-          break;
+	if ((AB_Value == 1) && (IR.B_value == 1))
+	  break;
 #else
-        if ((!memory[addrB].A_value) && (IR.B_value == 1))
-          break;
+	if ((!memory[addrB].A_value) && (IR.B_value == 1))
+	  break;
 #endif
-        push(addrA);
-        goto nopush;
+	push(addrA);
+	goto nopush;
 
 #ifdef NEW_OPCODES
       case OP(SEQ, mA):
 #endif
       case OP(CMP, mA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != ADDRA_AVALUE)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != ADDRA_AVALUE)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
 #ifdef NEW_OPCODES
       case OP(SEQ, mI):
 #endif
       case OP(CMP, mI):
-        display_read(addrB);
-        display_read(addrA);
-        if ((memory[addrB].opcode != memory[addrA].opcode) ||
-            (memory[addrB].A_mode != memory[addrA].A_mode) ||
-            (memory[addrB].B_mode != memory[addrA].B_mode))
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if ((memory[addrB].opcode != memory[addrA].opcode) ||
+	    (memory[addrB].A_mode != memory[addrA].A_mode) ||
+	    (memory[addrB].B_mode != memory[addrA].B_mode))
+	  break;
+	/* FALLTHRU */
 #ifdef NEW_OPCODES
       case OP(SEQ, mF):
 #endif
       case OP(CMP, mF):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != ADDRA_AVALUE)
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != ADDRA_AVALUE)
+	  break;
+	/* FALLTHRU */
 #ifdef NEW_OPCODES
       case OP(SEQ, mB):
 #endif
       case OP(CMP, mB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != IR.A_value)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != IR.A_value)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
 #ifdef NEW_OPCODES
       case OP(SEQ, mAB):
 #endif
       case OP(CMP, mAB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != ADDRA_AVALUE)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != ADDRA_AVALUE)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
 #ifdef NEW_OPCODES
       case OP(SEQ, mX):
 #endif
       case OP(CMP, mX):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != ADDRA_AVALUE)
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != ADDRA_AVALUE)
+	  break;
+	/* FALLTHRU */
 #ifdef NEW_OPCODES
       case OP(SEQ, mBA):
 #endif
       case OP(CMP, mBA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != IR.A_value)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != IR.A_value)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
 #ifdef NEW_OPCODES
       case OP(SNE, mA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != ADDRA_AVALUE)
-          goto skip;
-        break;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != ADDRA_AVALUE)
+	  goto skip;
+	break;
     skip:
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
       case OP(SNE, mI):
-        display_read(addrB);
-        display_read(addrA);
-        if ((memory[addrB].opcode != memory[addrA].opcode) ||
-            (memory[addrB].A_mode != memory[addrA].A_mode) ||
-            (memory[addrB].B_mode != memory[addrA].B_mode))
-          goto skip;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if ((memory[addrB].opcode != memory[addrA].opcode) ||
+	    (memory[addrB].A_mode != memory[addrA].A_mode) ||
+	    (memory[addrB].B_mode != memory[addrA].B_mode))
+	  goto skip;
+	/* FALLTHRU */
       case OP(SNE, mF):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != ADDRA_AVALUE)
-          goto skip;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != ADDRA_AVALUE)
+	  goto skip;
+	/* FALLTHRU */
       case OP(SNE, mB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != IR.A_value)
-          goto skip;
-        break;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != IR.A_value)
+	  goto skip;
+	break;
 
       case OP(SNE, mAB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != ADDRA_AVALUE)
-          goto skip;
-        break;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != ADDRA_AVALUE)
+	  goto skip;
+	break;
 
       case OP(SNE, mX):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value != ADDRA_AVALUE)
-          goto skip;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value != ADDRA_AVALUE)
+	  goto skip;
+	/* FALLTHRU */
       case OP(SNE, mBA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE != IR.A_value)
-          goto skip;
-        break;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE != IR.A_value)
+	  goto skip;
+	break;
 #endif
 
       case OP(SLT, mA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE <= ADDRA_AVALUE)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE <= ADDRA_AVALUE)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
       case OP(SLT, mF):
       case OP(SLT, mI):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE <= ADDRA_AVALUE)
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE <= ADDRA_AVALUE)
+	  break;
+	/* FALLTHRU */
       case OP(SLT, mB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value <= IR.A_value)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value <= IR.A_value)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
       case OP(SLT, mAB):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value <= ADDRA_AVALUE)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value <= ADDRA_AVALUE)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
       case OP(SLT, mX):
-        display_read(addrB);
-        display_read(addrA);
-        if (IR.B_value <= ADDRA_AVALUE)
-          break;
-        /* FALLTHRU */
+	display_read(addrB);
+	display_read(addrA);
+	if (IR.B_value <= ADDRA_AVALUE)
+	  break;
+	/* FALLTHRU */
       case OP(SLT, mBA):
-        display_read(addrB);
-        display_read(addrA);
-        if (ADDRB_AVALUE <= IR.A_value)
-          break;
-        ADDMOD(progCnt, 2, temp);
-        goto pushtemp;
+	display_read(addrB);
+	display_read(addrA);
+	if (ADDRB_AVALUE <= IR.A_value)
+	  break;
+	ADDMOD(progCnt, 2, temp);
+	goto pushtemp;
 
 
       case OP(JMP, mA):
@@ -1077,8 +1101,8 @@ simulator1()
       case OP(JMP, mF):
       case OP(JMP, mX):
       case OP(JMP, mI):
-        push(addrA);
-        goto nopush;
+	push(addrA);
+	goto nopush;
 
 
       case OP(SPL, mA):
@@ -1088,17 +1112,17 @@ simulator1()
       case OP(SPL, mF):
       case OP(SPL, mX):
       case OP(SPL, mI):
-        temp = progCnt + 1;
-        if (temp == coreSize)
-          temp = 0;
-        push(temp);
+//        temp = progCnt + 1;
+	if ((temp = progCnt + 1) == coreSize)
+	  temp = 0;
+	push(temp);
 
-        if (W->tasks >= taskNum)
-          goto nopush;
-        ++W->tasks;
-        display_spl(W - warrior, W->tasks);
-        push(addrA);
-        goto nopush;
+	if (W->tasks >= taskNum)
+	  goto nopush;
+	++W->tasks;
+	display_spl(W - warrior, W->tasks);
+	push(addrA);
+	goto nopush;
 
 
       case OP(DAT, mA):
@@ -1109,25 +1133,25 @@ simulator1()
       case OP(DAT, mX):
       case OP(DAT, mI):
     die:
-        display_dat(progCnt, W - warrior, W->tasks);
-        if (--W->tasks)
-          goto nopush;
-        display_die(W - warrior);
-        W->score[warriorsLeft + warriors - 2]++;
-        cycle = cycle - 1 - (cycle - 1) / (warriorsLeft--);
-        if (warriorsLeft < 3)
-          goto nextround;        /* can't use break because in switch */
+	display_dat(progCnt, W - warrior, W->tasks);
+	if (--W->tasks)
+	  goto nopush;
+	display_die(W - warrior);
+	W->score[warriorsLeft + warriors - 2]++;
+	cycle = cycle - 1 - (cycle - 1) / (warriorsLeft--);
+	if (warriorsLeft < 3)
+	  goto nextround;        /* can't use break because in switch */
 
 #ifndef SERVER
-        if (debugState == BREAK) {
-          sprintf(outs, warriorTerminated, W - warrior, W->name);
-          debugState = cdb(outs);
-        }
+	if (debugState == BREAK) {
+	  sprintf(outs, warriorTerminated, W - warrior, W->name);
+	  debugState = cdb(outs);
+	}
 #endif                                /* SERVER */
-        oldW->nextWarrior = W = W->nextWarrior;
-        continue;
+	oldW->nextWarrior = W = W->nextWarrior;
+	continue;
 
-        /* $EXT$ insert code for new opcodes here */
+	/* $EXT$ insert code for new opcodes here */
 
 #ifdef NEW_OPCODES
       case OP(NOP, mA):
@@ -1137,91 +1161,110 @@ simulator1()
       case OP(NOP, mF):
       case OP(NOP, mX):
       case OP(NOP, mI):
-        break;
+	break;
 #endif
 
 #ifdef PSPACE
       case OP(LDP, mA):
-        display_read(addrA);
-        memory[addrB].A_value = get_pspace(ADDRA_AVALUE);
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value = get_pspace(ADDRA_AVALUE);
+	display_write(addrB);
+	break;
 
       case OP(LDP, mF):
       case OP(LDP, mX):
       case OP(LDP, mI):
       case OP(LDP, mB):
-        display_read(addrA);
-        memory[addrB].B_value = get_pspace(IR.A_value);
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value = get_pspace(IR.A_value);
+	display_write(addrB);
+	break;
 
       case OP(LDP, mAB):
-        display_read(addrA);
-        memory[addrB].B_value = get_pspace(ADDRA_AVALUE);
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].B_value = get_pspace(ADDRA_AVALUE);
+	display_write(addrB);
+	break;
 
       case OP(LDP, mBA):
-        display_read(addrA);
-        memory[addrB].A_value = get_pspace(IR.A_value);
-        display_write(addrB);
-        break;
+	display_read(addrA);
+	memory[addrB].A_value = get_pspace(IR.A_value);
+	display_write(addrB);
+	break;
 
       case OP(STP, mA):
-        display_read(addrA);
-        set_pspace(ADDRB_AVALUE, ADDRA_AVALUE);
-        break;
+	display_read(addrA);
+	set_pspace(ADDRB_AVALUE, ADDRA_AVALUE);
+	break;
 
       case OP(STP, mF):
       case OP(STP, mX):
       case OP(STP, mI):
       case OP(STP, mB):
-        display_read(addrA);
-        set_pspace(IR.B_value, IR.A_value);
-        break;
+	display_read(addrA);
+	set_pspace(IR.B_value, IR.A_value);
+	break;
 
       case OP(STP, mAB):
-        display_read(addrA);
-        set_pspace(IR.B_value, ADDRA_AVALUE);
-        break;
+	display_read(addrA);
+	set_pspace(IR.B_value, ADDRA_AVALUE);
+	break;
 
       case OP(STP, mBA):
-        display_read(addrA);
-        set_pspace(ADDRB_AVALUE, IR.A_value);
-        break;
+	display_read(addrA);
+	set_pspace(ADDRB_AVALUE, IR.A_value);
+	break;
 #endif                                /* PSPACE */
-      default:
-        errout(fatalErrorInSimulator);
-#ifndef DOS16
-        /* DOS taskQueue may not be free'd because of segment wrap-around */
-        free(memory);
-        free(taskQueue);
-        alloc_p = 0;
+      case OP(MOV, mI):
+	display_read(addrA);
+#ifndef SERVER
+	if (!copyDebugInfo)
+	  temp = memory[addrB].debuginfo;
 #endif
-        Exit(SERIOUS);
+	memory[addrB] = memory[addrA];
+#ifndef SERVER
+	if (!copyDebugInfo)
+	  memory[addrB].debuginfo = temp;
+#endif
+	memory[addrB].B_value = IR.A_value;
+#ifdef NEW_MODES
+	memory[addrB].A_value = AA_Value;
+#endif
+	display_write(addrB);
+//        break;
+#if 0
+      default:
+	errout(fatalErrorInSimulator);
+#ifndef DOS16
+	/* DOS taskQueue may not be free'd because of segment wrap-around */
+	free(memory);
+	free(taskQueue);
+	alloc_p = 0;
+#endif
+	Exit(SERIOUS);
+#endif
       }                                /* end switch */
 
       /* push the next instruction onto queue */
-      temp = progCnt + 1;
-      if (temp == coreSize)
-        temp = 0;
+ //     temp = progCnt + 1;
+      if ((temp=progCnt + 1) == coreSize)
+	temp = 0;
   pushtemp:                        /* push whatever's in temp onto queue */
       push(temp);
 
   nopush:                        /* just go to the next warrior/cycle */
       oldW = W;
       W = W->nextWarrior;
-      --cycle;
-    } while (cycle);                /* next cycle */
+//      --cycle;
+    } while (--cycle);                /* next cycle */
 nextround:
     for (temp = 0; temp < warriors; temp++) {
       if (warrior[temp].tasks) {
-        warrior[temp].score[warriorsLeft - 1]++;
+	warrior[temp].score[warriorsLeft - 1]++;
 #ifdef PSPACE
-        warrior[temp].lastResult = warriorsLeft;
+	warrior[temp].lastResult = warriorsLeft;
       } else
-        warrior[temp].lastResult = 0;
+	warrior[temp].lastResult = 0;
 #else
       }
 #endif
@@ -1233,9 +1276,9 @@ nextround:
 #ifndef SERVER
     if (debugState == BREAK) {
       if (warriorsLeft == 1 && warriors != 1)
-        sprintf(outs, warriorTerminatedEndOfRound, W - warrior, W->name, round);
+	sprintf(outs, warriorTerminatedEndOfRound, W - warrior, W->name, round);
       else
-        sprintf(outs, endOfRound, round);
+	sprintf(outs, endOfRound, round);
       debugState = cdb(outs);
     }
 #endif
