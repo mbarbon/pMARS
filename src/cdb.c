@@ -460,7 +460,7 @@ cdb(char *message)
     case DIS_H:
     case DI_H:
     case D_H:
-      if (argStr) {
+      if (*argStr) {
         if (((i = hash_str(argStr, 3)) == CLE_H) || (i == CLS_H)) {
 #if defined(DOSALLGRAPHX)
           if (displayMode == TEXT)
