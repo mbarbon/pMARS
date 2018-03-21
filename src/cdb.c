@@ -301,7 +301,7 @@ cdb(char *message)
 {
   char   *cmdStr, *fnStr, verbStr[MAXCMD + 1], argStr[MAXARG + 1];
   static long start, stop;
-  int     argType, returnValue;
+  int     argType, returnValue = NOBREAK;
   unsigned int i;
 
   /* skip execution */
