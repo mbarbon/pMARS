@@ -111,6 +111,36 @@
 */
 
 /* ********************************************************************
+   DIR_SEPARATOR: Override automatic selection of the directory separator
+   for your OS.  The default is '/' unless running MS-DOS or Windows.
+   ******************************************************************** */
+/*
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+*/
+/*
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '\\'
+#endif
+*/
+/*
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR ':'
+#endif
+*/
+
+/* ********************************************************************
+   WIN32: If you run Windows uncomment the next line.
+   ******************************************************************** */
+/*
+#ifndef WIN32
+#define WIN32
+#endif
+*/
+
+
+/* ********************************************************************
    BSD44: If you run BSD Unix 4.4 or BSD 4.4 Lite and use the curses display
    library version 8.x, then you need to define this symbol. Curses 8.x has
    a windows structure that's slightly different from other curses libraries.
@@ -158,6 +188,18 @@
 /*
 #ifndef XWINGRAPHX
 #define XWINGRAPHX
+#endif
+*/
+
+/* ********************************************************************
+   SDLGRAPHX: If defined, specifies that pMARS should use the Simple Direct
+    Media library interface for graphical display.  Specifying SDLGRAPHX
+    overrides all other graphical displays.
+   ******************************************************************** */
+
+/*
+#ifndef SDLGRAPHX
+#define SDLGRAPHX
 #endif
 */
 
@@ -266,6 +308,10 @@
    Do not alter the next sections. They mainly ensure consistency.
    ******************************************************************** */
 
+#if (defined(_WIN32) && !defined(WIN32))
+#define WIN32
+#endif
+
 #if (defined(__TURBOC__) || defined(__BORLANDC__) || defined(MSDOS)\
     || defined(__MSDOS__) || defined(_MSC_VER)) && !defined(__GO32__)\
     && !defined(WATCOM)
@@ -282,7 +328,7 @@
 
 #if (defined(DOSTXTGRAPHX) && defined(DOSGRXGRAPHX)) || defined(OS2PMGRAPHX)\
     || defined(MACGRAPHX) || defined(CURSESGRAPHX) || defined(DOSALLGRAPHX)\
-     || defined(LINUXGRAPHX) || defined(XWINGRAPHX)
+     || defined(LINUXGRAPHX) || defined(XWINGRAPHX) || defined(SDLGRAPHX)
 #ifndef GRAPHX
 #define GRAPHX
 #endif
@@ -357,6 +403,49 @@
 #endif
 #ifdef DOSTXTGRAPHX
 #undef DOSTXTGRAPHX
+#endif
+#endif
+
+#ifndef DIR_SEPARATOR
+#if defined(WIN32) || defined(MSDOS) || defined(__MSDOS__) || defined(__GO32__)
+#define DIR_SEPARATOR '\\'
+#else
+#define DIR_SEPARATOR '/'
+#endif
+#endif
+
+#if defined(SDLGRAPHX)
+#ifdef CURSESGRAPHX
+#undef CURSESGRAPHX
+#endif
+#ifdef LINUXGRAPHX
+#undef LINUXGRAPHX
+#endif
+#ifdef DOSTXTGRAPHX
+#undef DOSTXTGRAPHX
+#endif
+#ifdef DOSTXTGRAPHX
+#undef DOSTXTGRAPHX
+#endif
+#ifdef DOSGRXGRAPHX
+#undef DOSGRXGRAPHX
+#endif
+#ifdef DOSALLGRAPHX
+#undef DOSALLGRAPHX
+#endif
+#ifdef MACGRAPHX
+#undef MACGRAPHX
+#endif
+#ifdef OS2PMGRAPHX
+#undef OS2PMGRAPHX
+#endif
+#endif
+
+#if defined(STDGRAPHX)
+#if defined(GRAPHX)
+#error some other graphx from STDGRAPHX already defined
+#else
+#define GRAPHX
 #endif
 #endif
 

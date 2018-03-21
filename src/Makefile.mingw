@@ -1,0 +1,71 @@
+# Makefile for MinGW compilation for Win32.
+CC = gcc				# req. for linux
+#CC = cc				# if you don't have gcc
+# Configuration options:
+#
+# No.   Name            Incompatible with   Description
+# (1)   -DSERVER        2                   disables cdb debugger (koth server
+#                                           version)
+# (2)   -DSDLGRAPHX     1                   enables SDL graphics display
+# (3)   -DEXT94                             ICWS'94 + SEQ,SNE,NOP,*,{,}
+# (4)   -DPERMUTATE                         enables -P switch
+
+INCLUDE = -I /mingw/include/SDL
+CFLAGS = -O2 -DEXT94 -DPERMUTATE -DSDLGRAPHX $(INCLUDE)
+#LFLAGS = -x
+LIB = -lmingw32 -lSDL
+
+# NOTE: For -DSDLGRAPHX you will need the SDL library and its header
+# files installed on your system somewhere, available from
+# www.libsdl.org.
+#
+# Usually with SDL applications one uses the output from the script
+# 'sdl-config --cflags' in the CFLAGS variable and 'sdl-config --libs' in
+# the LIB variable.  Unfortunately SDL is configured by default to
+# produce pure GUI applications, so we need to override both
+# variables.
+#
+# To be sure, check the output of 'sdl-config --cflags' and 'sdl-config
+# --libs' to see where your include files/libraries are located.  From
+# the output of 'sdl-config --libs', you should remove the flags
+# -lSDLmain and -mwindows, since we provide our own entry point and want
+# to compile a console app.
+
+# -------------------------------------------------------------------------
+# The rest should be automatic:
+
+EXESUFFIX=.exe
+.SUFFIXES: .o .c .c~ .man .doc .6
+MAINFILE = pmars$(EXESUFFIX)
+
+HEADER = global.h config.h asm.h sim.h
+OBJ1 = pmars.o asm.o eval.o disasm.o cdb.o sim.o pos.o
+OBJ2 = clparse.o global.o token.o
+OBJ3 = str_eng.o
+OBJ4 = SDL_main.o
+
+all: flags $(MAINFILE)
+
+flags:
+	@echo Making $(MAINFILE) with compiler flags $(CFLAGS)
+
+$(MAINFILE): $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4)
+	@echo Linking $(MAINFILE)
+	@$(CC) -o $(MAINFILE) $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(LIB)
+	# @strip $(MAINFILE)
+	@echo done
+
+token.o asm.o disasm.o: asm.h
+
+sim.o cdb.o pos.o disasm.o: sim.h
+
+sim.o: sdldisp.c fnt16.c
+
+$(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4): Makefile.mingw config.h global.h
+
+.c.o:
+	@echo Compiling $*.o
+	@$(CC) $(CFLAGS) -c $*.c
+
+clean:
+	rm -f $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) core

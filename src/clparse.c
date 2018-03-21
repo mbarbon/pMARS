@@ -278,7 +278,7 @@ clp_parse(clopt, filep)
         if (!xwin_decode(inputs, &clip) && inputs[i] != clip->word) {
 #else
         if (inputs[i] != clip->word) {        /* option not found       */
-#endif
+#endif /* XWINGRAPHX */
 #ifndef MACGRAPHX
           if (inputs[i] == '@') {        /* included command file? */
             if (inputs[i + 1] != '\0') {
@@ -514,7 +514,7 @@ parse_param(largc, largv)
   record('=', clp_str, &SWITCH_eq, 0, 0, 0, optScoreFormula);
   record('Q', clp_int, &SWITCH_Q, -1, INT_MAX, -1, NULL);
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX)  || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
 #if defined(XWINGRAPHX)
 #define V_MAX        2994
 #else
