@@ -22,7 +22,7 @@
  */
 
 #include <stdio.h>
-#if defined(unix) || defined(VMS)
+#if defined(unix) || defined(VMS) || defined(SDLGRAPHX)
 #include <signal.h>
 #else
 #if defined(__MSDOS__)
@@ -39,8 +39,13 @@
 #include <fcntl.h>
 #endif
 
+#if defined(SDLGRAPHX)
+/* Including SDL.h here makes sure main() is renamed to whatever SDL needs. */
+#include "SDL.h"
+#endif
+
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX)
 #if defined(DJGPP)
 #include <std.h>
 #else
@@ -71,7 +76,7 @@ int     returninfo(void);
 #ifdef PSPACE
 void    pspace_init(void);
 #endif
-#if defined(unix) || defined(__MSDOS__) || defined(VMS)
+#if defined(unix) || defined(__MSDOS__) || defined(SDLGRAPHX) || defined(VMS)
 void    sighandler(int dummy);
 #endif
 #if defined(CURSESGRAPHX)
@@ -117,7 +122,7 @@ is386:
 #endif
 
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
 void
 decode_vopt(int option)
 {
@@ -138,6 +143,16 @@ decode_vopt(int option)
   loopDelay = loopDelayAr[displaySpeed];
   keyDelay = keyDelayAr[displaySpeed];
 #endif
+#if defined(SDLGRAPHX)
+  sdlgr_set_displayLevel(displayLevel);
+  sdlgr_set_displaySpeed(displaySpeed);
+  sdlgr_set_displayMode(displayMode);
+#endif
+#if defined(STDGRAPHX)
+  stdio_set_displaySpeed(displaySpeed);
+  stdio_set_displayLevel(displayLevel);
+  stdio_set_displayMode(displayMode);
+#endif
 }
 #endif
 
@@ -151,11 +166,11 @@ init(void)
   errorlevel = WARNING;                /* reserve for future */
   errmsg[0] = '\0';                /* reserve for future */
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
   decode_vopt(SWITCH_v);
 #endif
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || (defined(SDLGRAPHX) && !defined(WIN32))
   if (!isatty(fileno(stdin)))
     inputRedirection = TRUE;
 #endif
@@ -197,7 +212,7 @@ body(void)
 }
 
 /* called when ctrl-c is pressed; prepares for debugger entry */
-#if defined(unix) || defined(__MSDOS__) || defined (__OS2__)
+#if defined(unix) || defined(__MSDOS__) || defined (__OS2__) || defined(SDLGRAPHX)
 void
 #ifdef __OS2__
         _cdecl

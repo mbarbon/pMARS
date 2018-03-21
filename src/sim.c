@@ -91,7 +91,15 @@ extern void sighandler(int dummy);
 #ifdef XWINGRAPHX
 #include "xwindisp.c"
 #else
+#ifdef SDLGRAPHX
+#include "sdldisp.c"
+#else
+#ifdef STDGRAPHX
+#include "stddisp.c"
+#else
 #include "uidisp.c"
+#endif
+#endif
 #endif
 #endif
 
@@ -228,8 +236,8 @@ simulator1(void)
   mem_struct *endPtr;                /* pointer used to copy program to core */
 register  int     temp;                        /* general purpose temporary variable */
   int     addrA, addrB;                /* A and B pointers */
-#ifdef TRACEGRAPHX
-  int     temp2;
+#ifndef SERVER
+  int     temp2;			/* needed in graphical versions to display postincrements at the correct address */
 #endif
   ADDR_T FAR *tempPtr2;
 #ifdef NEW_MODES
@@ -352,7 +360,8 @@ register  int     temp;                        /* general purpose temporary vari
       /* initialize head, tail, and taskQueue */
       W->taskHead = tempPtr2;
       W->taskTail = tempPtr2 + 1;
-      *tempPtr2 = W->position + W->offset;
+      *tempPtr2 = (W->position + W->offset) % coreSize;
+      *tempPtr2 = *tempPtr2 < 0 ? *tempPtr2 + coreSize : *tempPtr2;
       W->tasks = 1;
       tempPtr2 -= taskNum;
       destPtr = memory + W->position;
@@ -418,12 +427,9 @@ if (IR.A_mode != (FIELD_T) IMMEDIATE)
 			display_dec(addrA);
 		}
 		/* jk - added os2 part */
-		#ifdef GRAPHX
-		display_inc(addrA);
-		#else
-		#if defined(TRACEGRAPHX)
+		display_read(addrA);
+		#ifndef SERVER
 		temp2 = addrA;        /* make the trace accurate */
-		#endif
 		#endif
 		ADDMOD(temp, addrA, addrA);
 
@@ -442,7 +448,7 @@ if (IR.A_mode != (FIELD_T) IMMEDIATE)
 			#else
 			tempPtr->B_value = temp;
 			#endif
-			#ifdef TRACEGRAPHX
+			#ifndef SERVER
 			display_inc(temp2);
 			#endif
 		}
@@ -500,12 +506,9 @@ if (IR.B_mode != (FIELD_T) IMMEDIATE)
 			display_dec(addrB);
 		}
 		/* jk - added os2 part */
-		#ifdef GRAPHX
-		display_inc(addrB);
-		#else
-		#if defined(TRACEGRAPHX)
+		display_read(addrB);
+		#ifndef SERVER 
 		temp2 = addrB;
-		#endif
 		#endif
 
 		ADDMOD(temp, addrB, addrB);
@@ -526,7 +529,7 @@ if (IR.B_mode != (FIELD_T) IMMEDIATE)
 			#else
 			tempPtr->B_value = temp;
 			#endif
-			#ifdef TRACEGRAPHX
+			#ifndef SERVER
 			display_inc(temp2);
 			#endif
 		}

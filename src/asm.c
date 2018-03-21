@@ -641,9 +641,19 @@ textout(char *str)
 #if defined XWINGRAPHX
   else
     xWin_puts(str);
+#else
+#if defined(SDLGRAPHX)
+  else
+    sdlgr_puts(str);
+#else
+#if defined STDGRAPHX
+  else
+    stdio_puts(str);
 #else                                /* no display */
   else
     fputs(str, stderr);
+#endif                                /* STDGRAPHX */
+#endif                                /* SDLGRAPHX */
 #endif                                /* XWINGRAPHX */
 #endif                                /* LINUXGRAPHX */
 #endif                                /* DOSGRXGRAPHX */

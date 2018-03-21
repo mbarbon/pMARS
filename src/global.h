@@ -37,6 +37,9 @@
 /* *********************************************************************
    System dependent definitions or declarations
    ********************************************************************* */
+#if defined(__STDC__)  || defined(DOS16)
+#define NEW_STYLE
+#endif
 
 /* Generic Pointer type */
 typedef void *pointer_t;
@@ -325,7 +328,7 @@ extern int inCdb;
 extern int debugState;
 extern int copyDebugInfo;
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
 extern int inputRedirection;
 #endif
 #if defined(XWINGRAPHX)
@@ -347,7 +350,7 @@ extern ADDR_T pSpaceSize;
    *********************************************************************** */
 
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
 
 #if !defined(LINUXGRAPHX)        /* vga.h already defines TEXT to be 0 */
 #define         TEXT 0
@@ -408,7 +411,7 @@ extern void reset_regs(void);
 extern void set_reg(char regChr, long val);
 
 #if defined(DOSTXTGRAPHX) || defined(DOSGRXGRAPHX) || defined(LINUXGRAPHX) \
-    || defined(XWINGRAPHX)
+    || defined(XWINGRAPHX) || defined(SDLGRAPHX) || defined(STDGRAPHX)
 extern void decode_vopt(int option);
 #ifndef LINUXGRAPHX
 extern void grputs(char *str);
@@ -435,6 +438,40 @@ extern void xWin_update(int curPanel);
 extern void xWin_display_close(int wait);
 extern char *xWin_gets(char *s, int maxstr);
 extern void xWin_resize(void);
+#endif
+
+#if defined(SDLGRAPHX)
+void  sdlgr_clear_arena (void);
+void  sdlgr_refresh (int what);	/* -1: all, 0: core, >0 all text panels. */
+void  sdlgr_relayout ();
+void  sdlgr_write_menu (void);
+void  sdlgr_update (int nextpanel);
+void  sdlgr_clear (void);
+void  sdlgr_puts (const char *s);
+char *sdlgr_gets (char *buf, int maxbuf, const char *prompt);
+void  sdlgr_display_clear (void);
+void  sdlgr_open_graphics (void);
+void  sdlgr_display_close (int wait);
+int   sdlgr_text_lines (void);
+void  sdlgr_set_displayLevel(int level);
+void  sdlgr_set_displaySpeed(int speed);
+void  sdlgr_set_displayMode(int mode);
+#endif
+
+#if defined(STDGRAPHX)
+void stdio_open_graphics(void);
+void stdio_display_close(int wait);
+void stdio_clear_arena(void);
+void stdio_display_clear(void);
+void stdio_write_menu(void);
+void stdio_update(int nextpanel);
+void stdio_clear(void);
+void stdio_puts(const char *s);
+int stdio_text_lines(void);
+char *stdio_gets(char *buf, int maxbuf, const char *prompt);
+void stdio_set_displayMode(int newmode);
+void stdio_set_displayLevel(int newmode);
+void stdio_set_displaySpeed(int newmode);
 #endif
 #endif
 
