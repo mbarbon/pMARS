@@ -184,6 +184,8 @@ extern char *invalidGeom;
 #define cursoroff() xWin_cleartextxy(posx, posy, clearGC)
 
 /* function prototypes */
+extern void sighandler(int dummy);
+
 static void setcolor(int c);
 static void xWin_cleartextxy(int x, int y, GC gc);
 static void xWin_outtextxy(int x, int y, char *s);
@@ -670,7 +672,7 @@ conv_key(event)
   XEvent *event;
 {
   KeySym  keysym;
-  static unsigned char buffer[20];
+  static char buffer[20];
   XComposeStatus compose;
   int     count;
 
@@ -1586,7 +1588,7 @@ init_xwin(void)
   wmHints->initial_state = NormalState;
   wmHints->input = True;
   wmHints->icon_pixmap = XCreateBitmapFromData(display, xwindow,
-                            pmarsicn_bits, pmarsicn_width, pmarsicn_height);
+                            (const char *) pmarsicn_bits, pmarsicn_width, pmarsicn_height);
 
   /* resource & class names */
   classHints->res_name = "pmars";
